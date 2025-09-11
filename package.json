@@ -1,0 +1,20 @@
+{
+  "name": "jm-md-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^7.0.0-rc.2",
+    "chalk": "^4.1.2",
+    "figlet": "^1.9.1",
+    "pino": "^9.9.5",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
