@@ -1,16 +1,20 @@
 module.exports = {
-  name: 'autoreply',
-  description: 'Automatic reply system for greetings',
-  execute: async (sock, msg, args) => {
-    const from = msg.key.remoteJid;
-    const text = msg.message.conversation || msg.message.extendedTextMessage?.text;
-    if (!text) return;
+    name: 'autoreply',
+    description: 'Auto-replies to certain messages',
+    execute: async (sock, msg, args) => {
+        const from = msg.key.remoteJid;
+        const text = msg.message.conversation || msg.message.extendedTextMessage?.text
+        if (!text) return;
 
-    const greetings = ['hi', 'hello', 'hey', 'morning', 'evening'];
-    const lowerText = text.toLowerCase();
+        const replyMap = {
+            hello: 'Hello! 👋 How can I assist you today?',
+            help: 'Sure! Type .menu to see all available commands.',
+            ping: 'Pong! 🏓'
+        }
 
-    if (greetings.some(g => lowerText.includes(g))) {
-      await sock.sendMessage(from, { text: '👋 Hello! I am JM-MD BOT. Type .menu to see my commands!' });
-    }
-  },
+        const replyText = replyMap[text.toLowerCase()]
+        if (replyText) {
+            await sock.sendMessage(from, { text: replyText });
+        }
+    },
 };

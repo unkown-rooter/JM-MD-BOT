@@ -26,7 +26,7 @@ async function startBot() {
         if (connection === "open") console.log("✅ JM-MD BOT Connected!")
     })
 
-    // Load commands dynamically
+    // --- Load commands dynamically ---
     const commands = new Map()
     const commandFiles = fs.readdirSync(path.join(__dirname, "commands")).filter(file => file.endsWith(".js"))
     for (const file of commandFiles) {
@@ -34,9 +34,40 @@ async function startBot() {
         commands.set(command.name, command)
     }
 
-    // Handle incoming messages
+    // === AUTO-VIEW STATUS ===
+    async function autoViewStatus() {
+        try {
+            const contacts = Object.keys(sock.store.contacts) // get all contacts
+            for (const id of contacts) {
+                try {
+                    const status = await sock.statusGet(id)
+                    if (status?.statuses?.length > 0) {
+                        for (const s of status.statuses) {
+                            await sock.readMessages([{ remoteJid: id, id: s.id, fromMe: false }])
+                        }
+                        console.log(`✅ Viewed status for ${id}`)
+                    }
+                } catch (err) {
+                    console.error(`Error viewing status for ${id}:`, err)
+                }
+            }
+        } catch (err) {
+            console.error("Auto-view status error:", err)
+        }
+    }
+    setInterval(autoViewStatus, 5 * 60 * 1000) // run every 5 mins
+
+    // --- Handle incoming messages ---
     sock.ev.on("messages.upsert", async m => {
-        const msg = m.messages[0]
+        const messages = m.messages
+        for (const msg of messages) {
+            // Auto-read all incoming messages
+            if (!msg.key.fromMe) {
+                await sock.readMessages([msg.key])
+            }
+        }
+
+        const msg = messages[0]
         if (!msg.message || msg.key.fromMe) return
         const from = msg.key.remoteJid
 
@@ -49,7 +80,7 @@ async function startBot() {
         if (!text) return
         console.log("Message received:", text)
 
-        // Auto-reply system (if autoreply command exists)
+        // === AUTO-REPLY SYSTEM ===
         if (commands.has('autoreply')) {
             try {
                 await commands.get('autoreply').execute(sock, msg)
@@ -58,7 +89,7 @@ async function startBot() {
             }
         }
 
-        // Handle commands (text starting with "." or button IDs)
+        // === COMMAND HANDLER ===
         const isCommand = text.startsWith(".") || commands.has(text.replace('.', ''))
         if (isCommand) {
             const commandName = text.startsWith(".") ? text.slice(1).split(/ +/)[0].toLowerCase() : text.replace('.', '')
@@ -76,4 +107,5 @@ async function startBot() {
     })
 }
 
+// Start the bot
 startBot()
