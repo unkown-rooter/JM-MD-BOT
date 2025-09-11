@@ -1,22 +1,24 @@
-const { ownerName, ownerNumber, botName } = require("../config");
-
 module.exports = {
-    name: "menu",
-    description: "Show available commands",
-    execute: async (sock, from) => {
-        const menuText = `
-🤖 ${botName} MENU
+  name: 'menu',
+  description: 'Shows a list of available commands with buttons',
+  execute: async (sock, msg, args) => {
+    const from = msg.key.remoteJid;
 
-1. .menu - Show this menu
-2. .ping - Replies with "Pong!"
-3. .hello - Greets the user
-4. .autoreply on/off - Toggle auto-reply
-5. .addreply keyword|response - Add an auto-reply
-6. .owner - Show owner info
+    // Define buttons
+    const menuButtons = [
+      { buttonId: '.menu', buttonText: { displayText: 'Menu' }, type: 1 },
+      { buttonId: '.owner', buttonText: { displayText: 'Owner Info' }, type: 1 },
+      { buttonId: '.autoreply', buttonText: { displayText: 'Autoreply' }, type: 1 },
+    ];
 
-👤 Owner: ${ownerName}
-📲 Contact: ${ownerNumber}
-        `;
-        await sock.sendMessage(from, { text: menuText });
-    }
+    // Menu message content
+    const menuMessage = {
+      text: '🤖 *JM-MD BOT MENU*\n\nTap a button below to execute a command:',
+      buttons: menuButtons,
+      headerType: 1,
+    };
+
+    // Send menu
+    await sock.sendMessage(from, menuMessage);
+  },
 };

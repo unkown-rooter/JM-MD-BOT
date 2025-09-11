@@ -26,7 +26,7 @@ async function startBot() {
         if (connection === "open") console.log("✅ JM-MD BOT Connected!")
     })
 
-    // Load commands
+    // Load commands dynamically
     const commands = new Map()
     const commandFiles = fs.readdirSync(path.join(__dirname, "commands")).filter(file => file.endsWith(".js"))
     for (const file of commandFiles) {
@@ -34,32 +34,41 @@ async function startBot() {
         commands.set(command.name, command)
     }
 
-    // Handle messages
+    // Handle incoming messages
     sock.ev.on("messages.upsert", async m => {
         const msg = m.messages[0]
-        if (!msg.message || msg.key.fromMe) return // ignore empty or self messages
+        if (!msg.message || msg.key.fromMe) return
         const from = msg.key.remoteJid
-        const text = msg.message.conversation || msg.message.extendedTextMessage?.text
-        if (!text) return
 
-        console.log("Message:", text)
-
-        // === AUTO-REPLY SYSTEM ===
-        if (commands.has('autoreply')) {
-            const command = commands.get('autoreply')
-            await command.execute(sock, msg)
+        // Extract text from normal message or button response
+        let text = msg.message.conversation || msg.message.extendedTextMessage?.text || ""
+        if (msg.message.buttonsResponseMessage) {
+            text = msg.message.buttonsResponseMessage.selectedButtonId
         }
 
-        // === COMMAND HANDLER (for commands starting with '.') ===
-        if (text.startsWith(".")) {
-            const args = text.slice(1).trim().split(/ +/)
-            const commandName = args.shift().toLowerCase()
+        if (!text) return
+        console.log("Message received:", text)
+
+        // Auto-reply system (if autoreply command exists)
+        if (commands.has('autoreply')) {
+            try {
+                await commands.get('autoreply').execute(sock, msg)
+            } catch (err) {
+                console.error("Error in autoreply:", err)
+            }
+        }
+
+        // Handle commands (text starting with "." or button IDs)
+        const isCommand = text.startsWith(".") || commands.has(text.replace('.', ''))
+        if (isCommand) {
+            const commandName = text.startsWith(".") ? text.slice(1).split(/ +/)[0].toLowerCase() : text.replace('.', '')
+            const args = text.startsWith(".") ? text.slice(commandName.length + 2).trim().split(/ +/) : []
 
             if (commands.has(commandName)) {
                 try {
-                    await commands.get(commandName).execute(sock, from, args)
+                    await commands.get(commandName).execute(sock, msg, args)
                 } catch (err) {
-                    console.error(err)
+                    console.error("Command error:", err)
                     await sock.sendMessage(from, { text: "❌ Error executing command" })
                 }
             }

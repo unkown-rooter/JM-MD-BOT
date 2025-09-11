@@ -1,3 +1,4 @@
+
 # JM-MD BOT 🤖
 
 JM-MD BOT is a **WhatsApp Multi-Device Bot** built using [Baileys](https://github.com/WhiskeySockets/Baileys).  
@@ -30,3 +31,9 @@ Follow these steps to set up **JM-MD BOT** on your machine:
    ```bash
    git clone https://github.com/unkown-rooter/JM-MD-BOT.git
    cd JM-MD-BOT
+## 👤 Owner
+
+- Name: JapaneseMonk
+- WhatsApp: +254743445041
+- GitHub: [unkown-rooter](https://github.com/unkown-rooter)
+- Location: Nairobi, Kenya
