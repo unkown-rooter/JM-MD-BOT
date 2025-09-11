@@ -1,22 +1,12 @@
 module.exports = {
-    name: 'menu',
-    description: 'Shows a list of available commands with buttons',
-    execute: async (sock, msg, args) => {
+    name: 'autoreply', // must match filename
+    description: 'Automatically replies to messages',
+    async execute(sock, msg, args = [], apiKey) {
         const from = msg.key.remoteJid;
 
-        const menuButtons = [
-            { buttonId: '.menu', buttonText: { displayText: 'Menu' }, type: 1 },
-            { buttonId: '.owner', buttonText: { displayText: 'Owner Info' }, type: 1 },
-            { buttonId: '.autoreply', buttonText: { displayText: 'Autoreply' }, type: 1 },
-            { buttonId: '.about', buttonText: { displayText: 'About' }, type: 1 },
-        ];
+        // Example: log apiKey to confirm it's loaded
+        console.log("✅ Using API key in autoreply:", apiKey ? "Yes" : "No");
 
-        const menuMessage = {
-            text: '🤖 *JM-MD BOT MENU*\n\nTap a button below to execute a command:',
-            buttons: menuButtons,
-            headerType: 1,
-        };
-
-        await sock.sendMessage(from, menuMessage);
-    },
-};
+        // Your existing autoreply logic here
+    }
+}

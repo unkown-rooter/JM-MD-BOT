@@ -1,20 +1,12 @@
 module.exports = {
-    name: 'autoreply',
-    description: 'Auto-replies to certain messages',
-    execute: async (sock, msg, args) => {
+    name: 'autoreply', // must match filename
+    description: 'Automatically replies to messages',
+    async execute(sock, msg, args = [], apiKey) {
         const from = msg.key.remoteJid;
-        const text = msg.message.conversation || msg.message.extendedTextMessage?.text
-        if (!text) return;
 
-        const replyMap = {
-            hello: 'Hello! 👋 How can I assist you today?',
-            help: 'Sure! Type .menu to see all available commands.',
-            ping: 'Pong! 🏓'
-        }
+        // Example: log apiKey to confirm it's loaded
+        console.log("✅ Using API key in autoreply:", apiKey ? "Yes" : "No");
 
-        const replyText = replyMap[text.toLowerCase()]
-        if (replyText) {
-            await sock.sendMessage(from, { text: replyText });
-        }
-    },
-};
+        // Your existing autoreply logic here
+    }
+}

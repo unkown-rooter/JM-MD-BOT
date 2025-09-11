@@ -1,3 +1,6 @@
+// Load environment variables from .env
+require('dotenv').config();
+
 const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion } = require("@whiskeysockets/baileys")
 const P = require("pino")
 const figlet = require("figlet")
@@ -5,6 +8,9 @@ const chalk = require("chalk")
 const qrcode = require("qrcode-terminal")
 const fs = require("fs")
 const path = require("path")
+
+// Load Google API key from .env
+const apiKey = process.env.GOOGLE_API_KEY;
 
 async function startBot() {
     console.log(chalk.green(figlet.textSync("JM-MD BOT")))
@@ -83,7 +89,7 @@ async function startBot() {
         // === AUTO-REPLY SYSTEM ===
         if (commands.has('autoreply')) {
             try {
-                await commands.get('autoreply').execute(sock, msg)
+                await commands.get('autoreply').execute(sock, msg, apiKey) // pass apiKey if needed
             } catch (err) {
                 console.error("Error in autoreply:", err)
             }
@@ -97,7 +103,7 @@ async function startBot() {
 
             if (commands.has(commandName)) {
                 try {
-                    await commands.get(commandName).execute(sock, msg, args)
+                    await commands.get(commandName).execute(sock, msg, args, apiKey) // pass apiKey if needed
                 } catch (err) {
                     console.error("Command error:", err)
                     await sock.sendMessage(from, { text: "❌ Error executing command" })

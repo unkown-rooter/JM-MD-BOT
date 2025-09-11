@@ -1,8 +1,12 @@
 module.exports = {
-    name: 'owner',
-    description: 'Shows owner information',
-    execute: async (sock, msg, args) => {
+    name: 'autoreply', // must match filename
+    description: 'Automatically replies to messages',
+    async execute(sock, msg, args = [], apiKey) {
         const from = msg.key.remoteJid;
-        await sock.sendMessage(from, { text: '👤 *Owner Info*\nName: JapaneseMonk\nPhone: +254743445041\nRole: Developer & CEO' });
-    },
-};
+
+        // Example: log apiKey to confirm it's loaded
+        console.log("✅ Using API key in autoreply:", apiKey ? "Yes" : "No");
+
+        // Your existing autoreply logic here
+    }
+}

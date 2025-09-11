@@ -13,6 +13,7 @@
   "dependencies": {
     "@whiskeysockets/baileys": "^7.0.0-rc.2",
     "chalk": "^4.1.2",
+    "dotenv": "^17.2.2",
     "figlet": "^1.9.1",
     "pino": "^9.9.5",
     "qrcode-terminal": "^0.12.0"
