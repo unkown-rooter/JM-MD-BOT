@@ -1,6 +1,7 @@
 const makeWASocket = require("@whiskeysockets/baileys").default;
 const { useMultiFileAuthState } = require("@whiskeysockets/baileys");
 const fs = require("fs");
+const qrcode = require("qrcode-terminal"); // ✅ Added for QR printing
 
 // ✅ Import all commands (skip autoreply here to avoid double loading)
 const commands = {};
@@ -19,6 +20,22 @@ async function startSock() {
     const sock = makeWASocket({ auth: state });
 
     sock.ev.on("creds.update", saveCreds);
+
+    // ✅ NEW: Show QR code and connection status
+    sock.ev.on("connection.update", (update) => {
+        const { connection, qr } = update;
+        if (qr) {
+            console.log("📌 Scan this QR to log in:");
+            qrcode.generate(qr, { small: true });
+        }
+        if (connection === "open") {
+            console.log("✅ JM-MD BOT is connected to WhatsApp!");
+        }
+        if (connection === "close") {
+            console.log("⚠️ Connection closed, restarting...");
+            startSock(); // auto-restart
+        }
+    });
 
     sock.ev.on("messages.upsert", async (m) => {
         const msg = m.messages[0];
