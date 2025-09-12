@@ -13,6 +13,8 @@ module.exports = {
 • .owner – Show owner info  
 • .joke – Get a random joke  
 • .fact – Get a random fun fact  
+• .quote – Get a friendly quote  
+• .riddle – Solve a fun riddle  
 
 🤖 Auto-Reply:  
 • .autoreply on – Enable auto-reply  
