@@ -1,19 +1,15 @@
 const makeWASocket = require("@whiskeysockets/baileys").default;
 const { useMultiFileAuthState } = require("@whiskeysockets/baileys");
 const fs = require("fs");
-const qrcode = require("qrcode-terminal"); // ✅ Added for QR printing
+const qrcode = require("qrcode-terminal");
 
-// ✅ Import all commands (skip autoreply here to avoid double loading)
-const commands = {};
-const commandFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
+// ✅ Create a Map to store commands dynamically
+const commands = new Map();
+const commandFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js") && file !== "autoreply.js");
 for (const file of commandFiles) {
-    if (file === "autoreply.js") continue; // prevent duplicate load
     const command = require(`./commands/${file}`);
-    commands[command.name] = command;
+    commands.set(command.name, command);
 }
-
-// ✅ Ensure ping.js is connected
-// If ping.js exists in ./commands, it is already included above
 
 // ✅ Import AutoReply separately
 const autoReply = require('./commands/autoreply');
@@ -24,7 +20,7 @@ async function startSock() {
 
     sock.ev.on("creds.update", saveCreds);
 
-    // ✅ NEW: Show QR code and connection status
+    // ✅ QR code & connection updates
     sock.ev.on("connection.update", (update) => {
         const { connection, qr } = update;
         if (qr) {
@@ -42,7 +38,7 @@ async function startSock() {
 
     sock.ev.on("messages.upsert", async (m) => {
         const msg = m.messages[0];
-        if (!msg.message) return;
+        if (!msg.message || msg.key.fromMe) return;
 
         const from = msg.key.remoteJid;
         const body =
@@ -55,9 +51,9 @@ async function startSock() {
             const args = body.slice(1).trim().split(/ +/);
             const commandName = args.shift().toLowerCase();
 
-            if (commands[commandName]) {
+            if (commands.has(commandName)) {
                 try {
-                    await commands[commandName].execute(sock, msg, args);
+                    await commands.get(commandName).execute(msg, sock, args); // Pass msg, sock, args
                 } catch (err) {
                     console.error("Command error:", err);
                     await sock.sendMessage(from, { text: "⚠️ Error executing command." });
