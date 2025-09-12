@@ -11,6 +11,7 @@ module.exports = {
 • .about – About the bot
 • .menu – Show this menu
 • .owner – Show owner info
+• .download – Download a file from bot storage
 
 😂 Fun Commands:
 • .joke – Get a random joke
