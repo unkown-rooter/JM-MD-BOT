@@ -12,6 +12,9 @@ for (const file of commandFiles) {
     commands[command.name] = command;
 }
 
+// ✅ Ensure ping.js is connected
+// If ping.js exists in ./commands, it is already included above
+
 // ✅ Import AutoReply separately
 const autoReply = require('./commands/autoreply');
 
