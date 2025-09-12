@@ -1,12 +1,20 @@
+const config = require("../config");
+
 module.exports = {
-    name: 'autoreply', // must match filename
-    description: 'Automatically replies to messages',
-    async execute(sock, msg, args = [], apiKey) {
+    name: "owner",
+    description: "Show owner information",
+
+    async execute(sock, msg) {
         const from = msg.key.remoteJid;
 
-        // Example: log apiKey to confirm it's loaded
-        console.log("✅ Using API key in autoreply:", apiKey ? "Yes" : "No");
+        const message = `👑 *Owner Information*  
+        
+📛 Name: ${config.ownerName}  
+📱 Number: ${config.ownerNumber}  
+🤖 Bot: ${config.botName}  
 
-        // Your existing autoreply logic here
+_Type .menu to see all commands_`;
+
+        await sock.sendMessage(from, { text: message });
     }
-}
+};

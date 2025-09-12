@@ -1,12 +1,23 @@
 module.exports = {
-    name: 'autoreply', // must match filename
-    description: 'Automatically replies to messages',
-    async execute(sock, msg, args = [], apiKey) {
+    name: "menu",
+    description: "Show all available commands",
+
+    async execute(sock, msg) {
         const from = msg.key.remoteJid;
 
-        // Example: log apiKey to confirm it's loaded
-        console.log("✅ Using API key in autoreply:", apiKey ? "Yes" : "No");
+        const menuMessage = `📖 *JM-MD BOT Menu*  
 
-        // Your existing autoreply logic here
+✨ General Commands:  
+• .about – About the bot  
+• .menu – Show this menu  
+• .owner – Show owner info  
+
+🤖 Auto-Reply:  
+• .autoreply on – Enable auto-reply  
+• .autoreply off – Disable auto-reply  
+
+_More commands coming soon..._`;
+
+        await sock.sendMessage(from, { text: menuMessage });
     }
-}
+};
