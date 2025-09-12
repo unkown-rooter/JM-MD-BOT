@@ -1,26 +1,34 @@
 module.exports = {
     name: "menu",
-    description: "Show all available commands",
-
-    async execute(sock, msg) {
+    description: "Show all available commands and upcoming features",
+    execute: async (msg, sock, args) => {
         const from = msg.key.remoteJid;
 
-        const menuMessage = `📖 *JM-MD BOT Menu*  
+        const menuMessage = `
+📖 *JM-MD BOT Menu*
 
-✨ General Commands:  
-• .about – About the bot  
-• .menu – Show this menu  
-• .owner – Show owner info  
-• .joke – Get a random joke  
-• .fact – Get a random fun fact  
-• .quote – Get a friendly quote  
-• .riddle – Solve a fun riddle  
+✨ General Commands:
+• .about – About the bot
+• .menu – Show this menu
+• .owner – Show owner info
 
-🤖 Auto-Reply:  
-• .autoreply on – Enable auto-reply  
-• .autoreply off – Disable auto-reply  
+😂 Fun Commands:
+• .joke – Get a random joke
+• .fact – Get a random fun fact
+• .quote – Get a friendly quote
+• .riddle – Get a fun riddle
 
-_More commands coming soon..._`;
+🤖 Auto-Reply:
+• .autoreply on – Enable auto-reply
+• .autoreply off – Disable auto-reply
+
+🚀 *Coming Soon*:
+- Interactive quizzes & games
+- Personalized commands
+- Daily motivational quotes
+
+_Type a command starting with "." to use it_
+`;
 
         await sock.sendMessage(from, { text: menuMessage });
     }

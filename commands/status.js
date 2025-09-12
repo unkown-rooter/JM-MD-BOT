@@ -1,16 +1,25 @@
 module.exports = {
     name: 'status',
-    description: 'Show bot current status',
-    execute: async (sock, msg, args) => {
+    description: 'Show bot current status and active features',
+    execute: async (msg, sock, args) => {
         const from = msg.key.remoteJid;
 
-        // Here you can customize status info
+        // Load commands dynamically
+        const fs = require('fs');
+        const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+        const totalCommands = commandFiles.length;
+
         const statusText = `
 🤖 *JM-MD BOT Status*
+
 • Online: ✅
 • Auto-Reply: ✅
-• Commands loaded: ${Object.keys(require('./index.js').commands || {}).length}
-        `;
+• Total Commands: ${totalCommands}
+• Fun Commands Active: 😂 .joke, .fact, .quote, .riddle
+• Last Update: ${new Date().toLocaleString()}
+
+💡 *Tip*: Type .menu to see all commands and enjoy the features!
+`;
 
         await sock.sendMessage(from, { text: statusText });
     }

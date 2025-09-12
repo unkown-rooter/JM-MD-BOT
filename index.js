@@ -53,21 +53,26 @@ async function startSock() {
 
             if (commands.has(commandName)) {
                 try {
-                    await commands.get(commandName).execute(msg, sock, args); // Pass msg, sock, args
+                    // Execute command with (msg, sock, args)
+                    await commands.get(commandName).execute(msg, sock, args);
                 } catch (err) {
                     console.error("Command error:", err);
-                    await sock.sendMessage(from, { text: "⚠️ Error executing command." });
+                    await sock.sendMessage(from, { text: "⚠️ Oops! Something went wrong executing that command." });
                 }
+            } else {
+                await sock.sendMessage(from, { text: `❌ Unknown command: .${commandName}\nType .menu to see all commands.` });
             }
         }
 
         // ✅ Always run AutoReply after commands
         try {
-            await autoReply.execute(sock, msg, []);
+            await autoReply.execute(msg, sock, []);
         } catch (err) {
             console.error("AutoReply error:", err);
         }
     });
+
+    console.log("🤖 JM-MD BOT is ready and listening for commands!");
 }
 
 startSock();
