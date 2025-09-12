@@ -1,36 +1,50 @@
 # JM-MD BOT 🤖
 
 **JM-MD BOT** is a **WhatsApp Multi-Device Bot** built using [Baileys](https://github.com/WhiskeySockets/Baileys).  
-It allows you to automate WhatsApp tasks, run commands, and manage chats in a simple modular system.
+It allows you to automate WhatsApp tasks, run commands, and manage chats in a modular way.
 
-## ✨ Features
+---
 
-### ✅ Current Features
+## ✨ Current Features
+
 - 📲 Connects to WhatsApp via QR Code (Multi-Device support).
 - ⚡ Handles messages in real time.
-- 🧩 Modular command system (`commands/` folder) — fully upgraded to safely load API keys from `.env`.
-- 🤖 Example commands:
+- 🧩 Modular command system (`commands/` folder).
+- 🤖 Commands:
   - `.menu` → Shows available commands
-  - `.ping` → Replies with "Pong!"
-  - `.hello` → Greets the user
-  - `.autoreply` → Automatically responds to incoming messages
-- 🔒 Stores session securely inside `auth/` folder.
+  - `.about` → Info about the bot
+  - `.owner` → Owner details
+- 🔁 Auto-Reply System  
+  - `autoreply.js` handles all normal chats automatically.  
+  - Status stored in `autoreply-status.json`.  
+  - Custom responses stored in `autoreplies.json`.
+
+- 🔒 Secure session in `auth/` folder.
 - 🌐 Ready for deployment (Heroku, Railway, Render, Replit).
-- 🔑 Hidden API keys support via `.env` (e.g., Google API key), ensuring safe GitHub usage.
+- 🔑 API key support via `.env`.
 
-### 🚀 Upcoming Features
-- 🎨 Sticker Maker (convert images/videos to WhatsApp stickers).
-- 🎵 Media Downloader (YouTube, TikTok, Facebook, Instagram).
-- 🛡️ Group Admin Tools (welcome/goodbye messages, anti-link, mute/unmute).
-- ⚙️ Custom Commands (easily add new commands in `commands/`).
-- 📊 Analytics (track bot usage and performance).
-- 🔔 Auto-reply & scheduling system.
+---
 
-## ⚙️ Installation & Setup
-Follow these steps to set up **JM-MD BOT** on your machine:
+## 🚀 Upcoming Features
 
-1. **Clone the repository**
+- 🎨 Sticker Maker (convert images/videos to stickers).
+- 🎵 Media Downloader (YouTube, TikTok, Instagram, Facebook).
+- 🛡️ Group Admin Tools (welcome/goodbye, anti-link, mute/unmute).
+- ⚙️ Custom Commands (easily add new ones).
+- 📊 Analytics & Usage Tracking.
+- 🔔 Auto-reply scheduling system.
+
+---
+
+## ⚙️ Setup
 
 ```bash
+# Clone repo
 git clone https://github.com/unkown-rooter/JM-MD-BOT.git
 cd JM-MD-BOT
+
+# Install dependencies
+npm install
+
+# Start bot
+node index.js
