@@ -11,6 +11,8 @@ module.exports = {
 • .about – About the bot  
 • .menu – Show this menu  
 • .owner – Show owner info  
+• .joke – Get a random joke  
+• .fact – Get a random fun fact  
 
 🤖 Auto-Reply:  
 • .autoreply on – Enable auto-reply  
