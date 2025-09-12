@@ -8,6 +8,12 @@ module.exports = {
         const from = msg.key.remoteJid;
         const statusFile = "./autoreply-status.json";
 
+        // 🔹 Ignore messages sent by the bot itself
+        if (msg.key.fromMe) return;
+
+        // 🔹 Ignore system or empty messages
+        if (!msg.message || Object.keys(msg.message).length === 0) return;
+
         // Load current status
         let status = { enabled: false };
         if (fs.existsSync(statusFile)) {
