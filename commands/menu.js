@@ -19,7 +19,7 @@ module.exports = {
 
 😂 Fun Commands:
 • .joke – Get a random joke
-• .fact – Get a random fun fact
+• .fact – Get a surprising fun fact 🤯 (science, history, nature & more)
 • .quote – Get a friendly quote
 • .riddle – Get a fun riddle
 
