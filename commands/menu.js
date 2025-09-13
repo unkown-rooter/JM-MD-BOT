@@ -19,7 +19,7 @@ module.exports = {
 • .date – Show today’s full date 📅 (weekday, day, month, year)
 
 😂 Fun Commands:
-• .joke – Get a random joke
+• .joke – Get a random joke 🎉 (new fun jokes & emojis added!)
 • .fact – Get a surprising fun fact 🤯 (science, history, nature & more)
 • .quote – Get a friendly quote
 • .riddle – Get a fun riddle
