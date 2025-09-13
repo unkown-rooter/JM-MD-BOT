@@ -14,8 +14,8 @@ module.exports = {
 • .download – Download a file from bot storage
 
 🕒 Utility Commands:
-• .time – Show the current time
-• .date – Show today's date
+• .time – Show the current time ⏰
+• .date – Show today’s full date 📅 (weekday, day, month, year)
 
 😂 Fun Commands:
 • .joke – Get a random joke

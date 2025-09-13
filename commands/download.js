@@ -15,15 +15,23 @@ module.exports = {
 
         // Check if file exists
         if (!fs.existsSync(filePath)) {
-            await sock.sendMessage(from, { text: `❌ File "${fileName}" not found.` });
+            await sock.sendMessage(from, { 
+                text: `⚠️ Oops! The file *"${fileName}"* could not be found in storage.\n\n📂 Try another name or upload it first into the *downloads* folder.` 
+            });
             return;
         }
+
+        // Send a friendly notice before sending
+        await sock.sendMessage(from, { 
+            text: `📥 Preparing your download...\n\n✅ File: *${fileName}*\n🚀 Please wait a moment...` 
+        });
 
         // Send the file
         await sock.sendMessage(from, { 
             document: fs.readFileSync(filePath), 
             fileName: fileName,
-            mimetype: "application/octet-stream" 
+            mimetype: "application/octet-stream",
+            caption: `🎉 Here’s your file: *${fileName}*\n\n💡 Tip: You can request another file by typing \`.download <filename>\``
         });
     }
 };
