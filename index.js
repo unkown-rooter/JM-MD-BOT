@@ -3,9 +3,9 @@ const { useMultiFileAuthState } = require("@whiskeysockets/baileys");
 const fs = require("fs");
 const qrcode = require("qrcode-terminal");
 
-// ✅ Create a Map to store commands dynamically
+// ✅ Load all commands dynamically
 const commands = new Map();
-const commandFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js") && file !== "autoreply.js");
+const commandFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
 for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
     commands.set(command.name, command);
@@ -22,7 +22,7 @@ async function startSock() {
 
     // ✅ QR code & connection updates
     sock.ev.on("connection.update", (update) => {
-        const { connection, qr } = update;
+        const { connection, qr, lastDisconnect } = update;
         if (qr) {
             console.log("📌 Scan this QR to log in:");
             qrcode.generate(qr, { small: true });
@@ -53,8 +53,16 @@ async function startSock() {
 
             if (commands.has(commandName)) {
                 try {
-                    // Execute command with correct argument order (sock, msg, args)
-                    await commands.get(commandName).execute(sock, msg, args);
+                    const command = commands.get(commandName);
+
+                    // Handle different argument patterns
+                    if (["autoreply"].includes(commandName)) {
+                        // autoreply uses (msg, sock, args)
+                        await command.execute(msg, sock, args);
+                    } else {
+                        // other commands use (sock, msg, args)
+                        await command.execute(sock, msg, args);
+                    }
                 } catch (err) {
                     console.error("Command error:", err);
                     await sock.sendMessage(from, { text: "⚠️ Oops! Something went wrong executing that command." });
@@ -64,9 +72,9 @@ async function startSock() {
             }
         }
 
-        // ✅ Always run AutoReply after commands
+        // ✅ Always run AutoReply after commands (for non-command messages)
         try {
-            await autoReply.execute(sock, msg, []);
+            await autoReply.execute(msg, sock, []);
         } catch (err) {
             console.error("AutoReply error:", err);
         }
