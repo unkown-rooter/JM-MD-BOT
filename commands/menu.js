@@ -26,8 +26,8 @@ module.exports = {
 • .riddle – Get a fun riddle 🧩 (try ".riddle answer" for the solution!)
 
 🤖 Auto-Reply:
-• .autoreply on – Enable auto-reply
-• .autoreply off – Disable auto-reply
+• .autoreply on – Enable friendly auto-replies 🤖✨
+• .autoreply off – Disable auto-replies ❌
 • .status – Show current bot status and active features ⚡
 
 🚀 *Coming Soon*:
@@ -35,7 +35,7 @@ module.exports = {
 - Personalized commands
 - Daily motivational quotes
 
-_Type a command starting with "." to use it_
+_Type a command starting with "." to interact with me_
 `;
 
         await sock.sendMessage(from, { text: menuMessage });
