@@ -23,7 +23,7 @@ module.exports = {
 • .joke – Get a random joke 🎉 (new fun jokes & emojis added!)
 • .fact – Get a surprising fun fact 🤯 (science, history, nature & more)
 • .quote – Get a friendly motivational or funny quote ✨
-• .riddle – Get a fun riddle
+• .riddle – Get a fun riddle 🧩 (try ".riddle answer" for the solution!)
 
 🤖 Auto-Reply:
 • .autoreply on – Enable auto-reply
