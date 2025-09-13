@@ -11,7 +11,7 @@ module.exports = {
 • .about – About the bot
 • .menu – Show this menu
 • .owner – Show owner info
-• .download – Download a file from bot storage
+• .download <filename> – Download a file from bot storage 📂 (e.g. .download sample.pdf)
 
 🕒 Utility Commands:
 • .time – Show the current time ⏰
