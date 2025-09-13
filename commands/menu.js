@@ -1,7 +1,7 @@
 module.exports = {
     name: "menu",
     description: "Show all available commands and upcoming features",
-    execute: async (msg, sock, args) => {
+    execute: async (sock, msg, args) => {
         const from = msg.key.remoteJid;
 
         const menuMessage = `

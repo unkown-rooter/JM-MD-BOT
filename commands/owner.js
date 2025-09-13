@@ -3,7 +3,7 @@ const config = require("../config");
 module.exports = {
     name: "owner",
     description: "Show owner information and upcoming features",
-    execute: async (msg, sock, args) => {
+    execute: async (sock, msg, args) => {
         const from = msg.key.remoteJid;
 
         const ownerMessage = `
