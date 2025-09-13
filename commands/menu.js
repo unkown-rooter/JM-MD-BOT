@@ -12,6 +12,7 @@ module.exports = {
 • .menu – Show this menu
 • .owner – Show owner info
 • .info – Show bot status, fun features & uptime 💖
+• .ping – Check if the bot is online 🏓
 • .download <filename> – Download a file from bot storage 📂 (e.g. .download sample.pdf)
 
 🕒 Utility Commands:
