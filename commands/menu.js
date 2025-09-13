@@ -28,6 +28,7 @@ module.exports = {
 🤖 Auto-Reply:
 • .autoreply on – Enable auto-reply
 • .autoreply off – Disable auto-reply
+• .status – Show current bot status and active features ⚡
 
 🚀 *Coming Soon*:
 - Interactive quizzes & games
