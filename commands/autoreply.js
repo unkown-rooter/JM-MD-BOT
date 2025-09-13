@@ -19,17 +19,15 @@ module.exports = {
             status = JSON.parse(fs.readFileSync(statusFile));
         }
 
-        // ✅ If user typed ".autoreply on/off"
+        // ✅ Handle ".autoreply on/off"
         if (args.length > 0) {
             const choice = args[0].toLowerCase();
-
             if (choice === "on") {
                 status.enabled = true;
                 fs.writeFileSync(statusFile, JSON.stringify(status, null, 2));
                 await sock.sendMessage(from, { text: "✅ Auto-reply is now ON. I’ll be your friendly assistant 🤖✨" });
                 return;
             }
-
             if (choice === "off") {
                 status.enabled = false;
                 fs.writeFileSync(statusFile, JSON.stringify(status, null, 2));
@@ -38,22 +36,38 @@ module.exports = {
             }
         }
 
-        // ✅ If status is ON, reply automatically to normal messages
+        // ✅ Auto-reply when enabled
         if (status.enabled) {
-            const body =
-                msg.message.conversation ||
-                msg.message.extendedTextMessage?.text ||
-                "";
-
+            const body = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
             if (body && !body.startsWith(".")) {
+
+                // 🔹 Time-based greeting
+                const hour = new Date().getHours();
+                let greeting = "Hello";
+                if (hour < 12) greeting = "Good morning";
+                else if (hour < 18) greeting = "Good afternoon";
+                else greeting = "Good evening";
+
+                // 🔹 Keyword-based special replies
+                const lowerBody = body.toLowerCase();
+                if (["hi", "hello", "hey"].includes(lowerBody)) {
+                    await sock.sendMessage(from, { text: `👋 ${greeting}! I’m JM-MD BOT. Type .menu to see my commands.` });
+                    return;
+                }
+                if (["good morning", "good afternoon", "good evening"].includes(lowerBody)) {
+                    await sock.sendMessage(from, { text: `🌟 ${body}! Hope you have a great day! Type .menu to see what I can do.` });
+                    return;
+                }
+
+                // 🔹 Random friendly replies
                 const friendlyReplies = [
-                    "🤖 JM-MD BOT AutoReply: Hello! Type `.menu` to see what I can do.",
-                    "✨ Hey there! I’m online. Check out `.menu` for commands.",
-                    "😄 Hi friend! I’m here to assist. Try `.menu` to explore features."
+                    `🤖 ${greeting}! I’m online. Type .menu to explore my commands.`,
+                    "✨ Hey there! I’m here to assist you with fun commands and info.",
+                    "😄 Hi friend! Need help? Try .menu to see all my features.",
+                    "💡 Tip: You can type .fact, .joke, or .quote to get something fun!"
                 ];
 
                 const randomReply = friendlyReplies[Math.floor(Math.random() * friendlyReplies.length)];
-
                 await sock.sendMessage(from, { text: randomReply });
             }
         }
