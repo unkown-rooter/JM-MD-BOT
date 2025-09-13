@@ -53,8 +53,8 @@ async function startSock() {
 
             if (commands.has(commandName)) {
                 try {
-                    // Execute command with (msg, sock, args)
-                    await commands.get(commandName).execute(msg, sock, args);
+                    // Execute command with correct argument order (sock, msg, args)
+                    await commands.get(commandName).execute(sock, msg, args);
                 } catch (err) {
                     console.error("Command error:", err);
                     await sock.sendMessage(from, { text: "⚠️ Oops! Something went wrong executing that command." });
@@ -66,7 +66,7 @@ async function startSock() {
 
         // ✅ Always run AutoReply after commands
         try {
-            await autoReply.execute(msg, sock, []);
+            await autoReply.execute(sock, msg, []);
         } catch (err) {
             console.error("AutoReply error:", err);
         }

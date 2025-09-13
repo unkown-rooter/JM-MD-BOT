@@ -13,6 +13,10 @@ module.exports = {
 • .owner – Show owner info
 • .download – Download a file from bot storage
 
+🕒 Utility Commands:
+• .time – Show the current time
+• .date – Show today's date
+
 😂 Fun Commands:
 • .joke – Get a random joke
 • .fact – Get a random fun fact
