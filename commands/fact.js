@@ -1,7 +1,10 @@
+// fact.js - Upgraded version
+let lastFactIndex = -1; // to avoid sending the same fact twice in a row
+
 module.exports = {
     name: 'fact',
-    description: 'Sends a friendly random fun fact',
-    execute: async (msg, sock, args) => {
+    description: 'Sends a friendly random fun fact, with next fact feature',
+    execute: async (sock, msg, args) => { // <-- matches your index.js call
         const from = msg.key.remoteJid;
 
         const facts = [
@@ -20,8 +23,17 @@ module.exports = {
             "🧠 Did you know? Your brain has more connections than there are stars in our galaxy!"
         ];
 
-        const randomFact = facts[Math.floor(Math.random() * facts.length)];
+        let randomIndex;
 
-        await sock.sendMessage(from, { text: `📢 *Fun Fact!* \n\n${randomFact}` });
+        // Pick a random fact index that is different from lastFactIndex
+        do {
+            randomIndex = Math.floor(Math.random() * facts.length);
+        } while (randomIndex === lastFactIndex);
+
+        lastFactIndex = randomIndex;
+        const randomFact = facts[randomIndex];
+
+        // Send the fact
+        await sock.sendMessage(from, { text: `📢 *Fun Fact!* \n\n${randomFact}\n\nType .fact next for another fact!` });
     }
 };
