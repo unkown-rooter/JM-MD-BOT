@@ -1,42 +1,36 @@
+// commands/menu.js
 module.exports = {
     name: "menu",
-    description: "Show all available commands and upcoming features",
-    execute: async (sock, msg, args) => {
+    description: "Displays all available commands",
+    async execute(sock, msg, args) {
         const from = msg.key.remoteJid;
 
         const menuMessage = `
-📖 *JM-MD BOT Menu*
+📜 *JM-MD BOT Command Menu* 📜
 
-✨ General Commands:
-• .about – About the bot
-• .menu – Show this menu
-• .owner – Show owner info
-• .info – Show bot status, fun features & uptime 💖
-• .ping – Check if the bot is online 🏓
-• .download <filename> – Download a file from bot storage 📂 (e.g. .download sample.pdf)
+🎉 *Fun Commands*
+- .fact – Get a friendly fun fact 🍯
+- .joke – Laugh out loud 😄
+- .riddle – Challenge your mind 🧩
+- .quote – Motivational or funny quote ✨
 
-🕒 Utility Commands:
-• .time – Show the current time ⏰
-• .date – Show today’s full date 📅 (weekday, day, month, year)
+ℹ️ *Info Commands*
+- .info – Bot info 🤖
+- .owner – Owner contact 👑
+- .status – Bot status 📊
+- .about – About the bot 📝
+- .time – Current time ⏰
+- .date – Current date 📅
 
-😂 Fun Commands:
-• .joke – Get a random joke 🎉 (new fun jokes & emojis added!)
-• .fact – Get a surprising fun fact 🤯 (science, history, nature & more)
-• .quote – Get a friendly motivational or funny quote ✨
-• .riddle – Get a fun riddle 🧩 (try ".riddle answer" for the solution!)
+⚙️ *Utility Commands*
+- .download – Quick download guide 📥
+- .ping – Check if bot is alive 🏓
+- .menu – Show this menu 📜
+- .autoreply – Enable auto-reply 🤖
 
-🤖 Auto-Reply:
-• .autoreply on – Enable friendly auto-replies 🤖✨
-• .autoreply off – Disable auto-replies ❌
-• .status – Show current bot status and active features ⚡
-
-🚀 *Coming Soon*:
-- Interactive quizzes & games
-- Personalized commands
-- Daily motivational quotes
-
-_Type a command starting with "." to interact with me_
-`;
+✨ *Type any command with a dot prefix (.) to run it!*
+🚀 *Our Motto: Smooth, reliable, and fun – just like JM-MD BOT!*
+        `;
 
         await sock.sendMessage(from, { text: menuMessage });
     }

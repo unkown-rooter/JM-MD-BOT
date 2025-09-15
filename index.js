@@ -22,7 +22,7 @@ async function startSock() {
 
     // ✅ QR code & connection updates
     sock.ev.on("connection.update", (update) => {
-        const { connection, qr, lastDisconnect } = update;
+        const { connection, qr } = update;
         if (qr) {
             console.log("📌 Scan this QR to log in:");
             qrcode.generate(qr, { small: true });
@@ -54,15 +54,8 @@ async function startSock() {
             if (commands.has(commandName)) {
                 try {
                     const command = commands.get(commandName);
-
-                    // Handle different argument patterns
-                    if (["autoreply"].includes(commandName)) {
-                        // autoreply uses (msg, sock, args)
-                        await command.execute(msg, sock, args);
-                    } else {
-                        // other commands use (sock, msg, args)
-                        await command.execute(sock, msg, args);
-                    }
+                    // ✅ Standard execution format for all commands
+                    await command.execute(sock, msg, args);
                 } catch (err) {
                     console.error("Command error:", err);
                     await sock.sendMessage(from, { text: "⚠️ Oops! Something went wrong executing that command." });
@@ -74,7 +67,7 @@ async function startSock() {
 
         // ✅ Always run AutoReply after commands (for non-command messages)
         try {
-            await autoReply.execute(msg, sock, []);
+            await autoReply.execute(sock, msg, []);
         } catch (err) {
             console.error("AutoReply error:", err);
         }

@@ -1,34 +1,26 @@
+// status.js
+const os = require("os");
+
 module.exports = {
     name: 'status',
-    description: 'Show bot current status and active features',
-    execute: async (msg, sock, args) => {
+    description: 'Shows the bot status and uptime',
+    execute: async (sock, msg, args) => {
         const from = msg.key.remoteJid;
 
-        // Load commands dynamically
-        const fs = require('fs');
-        const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-        const totalCommands = commandFiles.length;
+        const uptime = process.uptime(); // in seconds
+        const uptimeHours = Math.floor(uptime / 3600);
+        const uptimeMinutes = Math.floor((uptime % 3600) / 60);
+        const uptimeSeconds = Math.floor(uptime % 60);
 
-        // Uptime calculation
-        const uptimeSec = process.uptime();
-        const hours = Math.floor(uptimeSec / 3600);
-        const minutes = Math.floor((uptimeSec % 3600) / 60);
-        const seconds = Math.floor(uptimeSec % 60);
+        const statusMessage = `📊 *JM-MD BOT Status* 📊
 
-        const statusText = `
-🤖 *JM-MD BOT Status*
+✅ Online and running
+⏱️ Uptime: ${uptimeHours}h ${uptimeMinutes}m ${uptimeSeconds}s
+🖥️ Host: ${os.hostname()}
+⚡ Node.js: ${process.version}
 
-🔹 Online: ✅
-🔹 Uptime: ⏱ ${hours}h ${minutes}m ${seconds}s
-🔹 Auto-Reply: 🤖 Enabled
-🔹 Total Commands: ${totalCommands} 💡
-🔹 Fun Commands Active: 😂 .joke, 🤯 .fact, ✨ .quote, 🧩 .riddle
-🔹 Utility Commands: ⏰ .time, 📅 .date, 🏓 .ping
-🔹 Last Update: 🗓 ${new Date().toLocaleString()}
+✨ Type .menu to see all commands!`;
 
-💌 *Friendly Tip*: Type .menu to see all commands and have fun! 🎉
-`;
-
-        await sock.sendMessage(from, { text: statusText });
+        await sock.sendMessage(from, { text: statusMessage });
     }
 };

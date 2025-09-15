@@ -1,7 +1,7 @@
 module.exports = {
-    name: 'riddle',
-    description: 'Sends a fun riddle to challenge your mind',
-    execute: async (msg, sock, args) => {
+    name: "riddle",
+    description: "Sends a fun riddle to challenge your mind",
+    async execute(sock, msg, args) {
         const from = msg.key.remoteJid;
 
         // Expanded riddles array with answers
@@ -23,9 +23,9 @@ module.exports = {
 
         // If user types ".riddle answer", show the answer
         if (args[0] && args[0].toLowerCase() === "answer") {
-            await sock.sendMessage(from, { text: `📝 Answer: ${selected.answer}\n\n_Type .riddle to get a new riddle!_` });
+            await sock.sendMessage(from, { text: `📝 *Answer:* ${selected.answer}\n\n👉 Type *.riddle* to get a new riddle!` });
         } else {
-            await sock.sendMessage(from, { text: `${selected.question}\n\n💡 Tip: Type .riddle answer to see the answer.` });
+            await sock.sendMessage(from, { text: `🤔 *Riddle Time!* 🤔\n\n${selected.question}\n\n💡 Tip: Type *.riddle answer* to see the answer.` });
         }
     }
 };

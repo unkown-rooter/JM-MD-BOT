@@ -1,23 +1,25 @@
+// joke.js
 module.exports = {
     name: 'joke',
-    description: 'Sends a friendly random joke',
-    execute: async (msg, sock, args) => {
-        const from = msg.key.remoteJid;
+    description: 'Sends a random funny joke',
+    execute: async (sock, msg, args) => {
+        const from = msg.key.remoteJid; // same style as riddle & quote
 
         const jokes = [
-            "😄 Why did the computer go to the doctor? It caught a virus!",
-            "😂 Why was the computer cold? It left its Windows open!",
-            "🤣 Why did the programmer quit his job? He didn't get arrays.",
-            "😆 Why did the computer keep sneezing? It had a bad case of ‘code’ allergies!",
-            "🐸 Why are frogs so happy? Because they eat whatever bugs them!",
-            "🍌 Why did the banana go to the doctor? Because it wasn't peeling well!",
-            "🤖 Why did the robot go on a diet? Because he had too many bytes!",
-            "👻 Why don't ghosts like rain? It dampens their spirits!",
-            "🦄 Why did the unicorn cross the road? To prove he wasn’t horsing around!"
+            "😂 Why don’t skeletons fight each other? They don’t have the guts!",
+            "🤣 I told my computer I needed a break… now it won’t stop sending me Kit-Kats!",
+            "😅 Why can’t your nose be 12 inches long? Because then it would be a foot!",
+            "😆 What do you call fake spaghetti? An *impasta*!",
+            "🙃 Why did the math book look sad? Because it had too many problems.",
+            "😎 Parallel lines have so much in common… it’s a shame they’ll never meet."
         ];
 
+        // Pick a random joke
         const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
 
-        await sock.sendMessage(from, { text: `🎉 *Joke Time!* \n\n${randomJoke}` });
+        // Build message
+        const jokeMessage = `🎭 *Here’s a Joke for You:*\n${randomJoke}\n\n✨ Type .menu to explore more commands!`;
+
+        await sock.sendMessage(from, { text: jokeMessage });
     }
 };
