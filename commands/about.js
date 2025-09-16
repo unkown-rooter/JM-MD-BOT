@@ -1,36 +1,61 @@
+// commands/about.js
+const fs = require("fs");
+const path = require("path");
+
 module.exports = {
     name: "about",
-    description: "About the bot and upcoming features",
+    description: "About JM-MD BOT and features",
     execute: async (sock, msg, args) => {
-        const from = msg.key.remoteJid;
+        try {
+            const from = msg.key.remoteJid;
 
-        const aboutMessage = `
-🤖 *JM-MD BOT v1.0*  
+            // Load commands dynamically
+            const commandsPath = path.join(__dirname);
+            const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"));
+            const commandsList = commandFiles
+                .map(file => {
+                    const command = require(`./${file}`);
+                    return `⚡ .${command.name} – ${command.description}`;
+                })
+                .join("\n");
+
+            const aboutMessage = `
+🤖 *JM-MD BOT v1.0*
+━━━━━━━━━━━━━━━━━━━━━━━
+👑 *Owner:* JapaneseMonk
+📱 *Prefix:* .
 
 🌟 *Core Values*
-- 24/7 Smart Assistance
-- Automation & Productivity
-- Fast, Reliable & Interactive
-- Professional & User-Friendly
+🕒 24/7 Smart Assistance
+⚡ Automation & Productivity
+⚡ Fast, Reliable & Interactive
+🎯 Professional & User-Friendly
 
 🛠️ *Available Commands*
-• .menu – Show all commands  
-• .owner – Show owner info  
-• .about – About this bot  
-• .autoreply – Toggle auto-replies  
-• .date – Show today’s date  
-• .time – Show current time  
+${commandsList}
 
-🚀 *Coming Soon*
-- Daily facts & motivational quotes  
-- Fun riddles & jokes  
-- Interactive quizzes & games  
-- Personalized commands & features  
-- Media tools (downloaders, converters, etc.)  
+🚀 *Features*
+🧠 Fun Facts
+😂 Jokes
+📝 Quotes
+🎲 Riddles
+🤖 AutoReply
+👀 AutoView Status
+📥 Downloads
 
+🔮 *Coming Soon*
+🎮 Quizzes & Games
+💡 Motivational Quotes
+🎵 Media Tools (downloaders, converters)
+⚙️ Personalized Commands
+
+━━━━━━━━━━━━━━━━━━━━━━━
 ✨ Powered by JM-MD BOT — always learning, always growing! ✨
 `;
 
-        await sock.sendMessage(from, { text: aboutMessage });
+            await sock.sendMessage(from, { text: aboutMessage });
+        } catch (error) {
+            console.log("Error in about.js:", error);
+        }
     }
 };

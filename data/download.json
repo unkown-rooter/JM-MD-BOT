@@ -1,0 +1,37 @@
+[
+    {
+        "name": "Guide Document",
+        "file": "guide.docx",
+        "description": "Step-by-step guide for beginners"
+    },
+    {
+        "name": "Fun Facts PDF",
+        "file": "funfacts.pdf",
+        "description": "Collection of fun facts"
+    },
+    {
+        "name": "Example Image",
+        "file": "example.jpg",
+        "description": "Sample image file"
+    },
+    {
+        "name": "Wallpaper 1",
+        "file": "wallpaper1.jpg",
+        "description": "Beautiful wallpaper image"
+    },
+    {
+        "name": "Wallpaper 2",
+        "file": "wallpaper2.jpg",
+        "description": "Another awesome wallpaper"
+    },
+    {
+        "name": "Wallpaper 3",
+        "file": "wallpaper3.jpg",
+        "description": "Cool wallpaper for your phone"
+    },
+    {
+        "name": "Country Song",
+        "file": "blake_shelton_god_39_s_country_official_music_video_mp3_49629.mp3",
+        "description": "Blake Shelton - God's Country (Audio)"
+    }
+]

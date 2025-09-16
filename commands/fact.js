@@ -1,39 +1,92 @@
-// fact.js - Upgraded version
-let lastFactIndex = -1; // to avoid sending the same fact twice in a row
+// fact.js - Fully upgraded with categories, history, quiz, emojis, and API + JSON support
+const fetch = require("node-fetch");
+const facts = require("../data/facts.json"); // JSON facts with optional category field
+const usersHistory = {}; // Tracks fact history per user
+
+let lastFactIndex = -1; // Prevent sending same fact consecutively globally
 
 module.exports = {
-    name: 'fact',
-    description: 'Sends a friendly random fun fact, with next fact feature',
-    execute: async (sock, msg, args) => { // <-- matches your index.js call
+    name: "fact",
+    description: "Sends a friendly random fun fact, with categories, history, and API fallback",
+    execute: async (sock, msg, args) => {
         const from = msg.key.remoteJid;
+        const userId = msg.key.participant || from; // unique per user
 
-        const facts = [
-            "🍯 Did you know? Honey never spoils. Archaeologists found 3000-year-old honey that’s still edible!",
-            "🍌 Did you know? Bananas are berries, but strawberries aren’t!",
-            "🐙 Did you know? Octopuses have three hearts and blue blood!",
-            "🌌 Did you know? A day on Venus is longer than a year on Venus!",
-            "✨ Did you know? There are more stars in the universe than grains of sand on Earth!",
-            "🦒 Did you know? Giraffes only need 5 to 30 minutes of sleep in 24 hours!",
-            "🐦 Did you know? Penguins propose to their mates with a pebble 💍🐧",
-            "🌍 Did you know? Earth is the only planet not named after a god or goddess.",
-            "💡 Did you know? Sharks existed before trees — over 400 million years ago!",
-            "🚀 Did you know? The footprints on the moon will stay there for millions of years (no wind to erase them).",
-            "🎶 Did you know? Music can help plants grow faster and healthier!",
-            "😴 Did you know? Cats sleep for about 70% of their lives 🐱💤",
-            "🧠 Did you know? Your brain has more connections than there are stars in our galaxy!"
-        ];
+        // Initialize history for this user if needed
+        if (!usersHistory[userId]) usersHistory[userId] = [];
 
-        let randomIndex;
+        const categoryArg = args[0] ? args[0].toLowerCase() : "random";
 
-        // Pick a random fact index that is different from lastFactIndex
-        do {
-            randomIndex = Math.floor(Math.random() * facts.length);
-        } while (randomIndex === lastFactIndex);
+        try {
+            // Try fetching from API
+            let apiFact;
+            try {
+                const response = await fetch("https://uselessfacts.jsph.pl/random.json?language=en");
+                const data = await response.json();
+                apiFact = data.text;
+            } catch (err) {
+                console.error("API fetch failed, using local JSON facts:", err);
+            }
 
-        lastFactIndex = randomIndex;
-        const randomFact = facts[randomIndex];
+            if (apiFact) {
+                usersHistory[userId].push(apiFact); // store in history
+                await sock.sendMessage(from, {
+                    text: `📢 *Fun Fact (Live API)!* \n\n${apiFact}\n\nType .fact next for another fact!`
+                });
+                return;
+            }
 
-        // Send the fact
-        await sock.sendMessage(from, { text: `📢 *Fun Fact!* \n\n${randomFact}\n\nType .fact next for another fact!` });
+            // Fallback to JSON facts
+            let availableFacts = facts;
+            if (categoryArg !== "random") {
+                availableFacts = facts.filter(f => f.category && f.category.toLowerCase() === categoryArg);
+                if (availableFacts.length === 0) {
+                    await sock.sendMessage(from, { text: `⚠️ No facts available for category "${categoryArg}". Showing random fact instead.` });
+                    availableFacts = facts;
+                }
+            }
+
+            if (!availableFacts || availableFacts.length === 0) {
+                await sock.sendMessage(from, { text: "⚠️ No facts available at the moment." });
+                return;
+            }
+
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * availableFacts.length);
+            } while (randomIndex === lastFactIndex && availableFacts.length > 1);
+
+            lastFactIndex = randomIndex;
+            const randomFactObj = availableFacts[randomIndex];
+            const randomFact = typeof randomFactObj === "string" ? randomFactObj : randomFactObj.text;
+
+            // Add emojis based on category
+            const categoryEmojiMap = {
+                science: "🔬",
+                history: "🏺",
+                nature: "🌳",
+                random: "🌟"
+            };
+            const emoji = randomFactObj.category ? categoryEmojiMap[randomFactObj.category.toLowerCase()] || "🌟" : "🌟";
+
+            // Add fact to user history
+            usersHistory[userId].push(randomFact);
+
+            // Optionally include a quiz (simple example)
+            const includeQuiz = Math.random() < 0.2; // 20% chance
+            let quizText = "";
+            if (includeQuiz) {
+                quizText = `\n🧩 *Mini Quiz:* True or False? Reply with .quiz <answer>`;
+            }
+
+            // Send formatted fact
+            await sock.sendMessage(from, {
+                text: `📢 *Fun Fact!* ${emoji}\n\n${randomFact}${quizText}\n\nType .fact next for another fact!`
+            });
+
+        } catch (err) {
+            console.error(err);
+            await sock.sendMessage(from, { text: "❌ Something went wrong while fetching a fact." });
+        }
     }
 };

@@ -1,36 +1,85 @@
 // commands/menu.js
+const fs = require("fs");
+const path = require("path");
+
 module.exports = {
     name: "menu",
     description: "Displays all available commands",
     async execute(sock, msg, args) {
         const from = msg.key.remoteJid;
 
-        const menuMessage = `
-📜 *JM-MD BOT Command Menu* 📜
+        // Load all commands dynamically
+        const commandFiles = fs.readdirSync(path.join(__dirname))
+            .filter(file => file.endsWith(".js") && file !== "menu.js");
 
-🎉 *Fun Commands*
-- .fact – Get a friendly fun fact 🍯
-- .joke – Laugh out loud 😄
-- .riddle – Challenge your mind 🧩
-- .quote – Motivational or funny quote ✨
+        // Predefined categories (you can add more if needed)
+        const categories = {
+            "Fun Commands 🎉": [],
+            "Info Commands ℹ️": [],
+            "Utility Commands ⚙️": []
+        };
 
-ℹ️ *Info Commands*
-- .info – Bot info 🤖
-- .owner – Owner contact 👑
-- .status – Bot status 📊
-- .about – About the bot 📝
-- .time – Current time ⏰
-- .date – Current date 📅
+        // Assign emojis for each command
+        const emojis = {
+            fact: "🍯",
+            joke: "😄",
+            riddle: "🧩",
+            quote: "✨",
+            info: "🤖",
+            owner: "👑",
+            about: "📝",
+            status: "📊",
+            time: "⏰",
+            date: "📅",
+            autoreply: "🤖",
+            autoview: "👀",
+            download: "📥",
+            ping: "🏓",
+            save: "💾",
+            fbdownloader: "📹",
+            calculator: "🧮",
+            reminder: "⏱️",
+            sticker: "🏷️"
+        };
 
-⚙️ *Utility Commands*
-- .download – Quick download guide 📥
-- .ping – Check if bot is alive 🏓
-- .menu – Show this menu 📜
-- .autoreply – Enable auto-reply 🤖
+        // Default categorization
+        const fun = ["fact", "joke", "riddle", "quote", "sticker"];
+        const info = ["info", "owner", "about", "status", "time", "date"];
+        const utility = ["download", "ping", "menu", "autoreply", "autoview", "save", "fbdownloader", "calculator", "reminder"];
 
-✨ *Type any command with a dot prefix (.) to run it!*
-🚀 *Our Motto: Smooth, reliable, and fun – just like JM-MD BOT!*
-        `;
+        // Dynamically load commands and categorize
+        for (const file of commandFiles) {
+            const command = require(`./${file}`);
+            if (fun.includes(command.name)) categories["Fun Commands 🎉"].push(command);
+            else if (info.includes(command.name)) categories["Info Commands ℹ️"].push(command);
+            else if (utility.includes(command.name)) categories["Utility Commands ⚙️"].push(command);
+            else {
+                // Any new commands not mapped go to Utility by default
+                categories["Utility Commands ⚙️"].push(command);
+            }
+        }
+
+        // Build menu message with numbering
+        let menuMessage = `╭━━━〔 *🤖 JM-MD BOT MENU 🤖* 〕━━━╮\n\n`;
+        let counter = 1;
+
+        for (const [cat, cmds] of Object.entries(categories)) {
+            if (cmds.length === 0) continue; // skip empty categories
+            menuMessage += `*${cat}*\n`;
+            for (const cmd of cmds) {
+                const emoji = emojis[cmd.name] || "🔹"; // fallback emoji
+                menuMessage += `${counter}. ${emoji} .${cmd.name} – ${cmd.description}\n`;
+                counter++;
+            }
+            menuMessage += `\n`;
+        }
+
+        menuMessage += `
+━━━━━━━━━━━━━━━━━━
+🚀 *Our Motto:*
+*Smooth, reliable, and fun – just like JM-MD BOT!* ✨
+━━━━━━━━━━━━━━━━━━
+💡 Total Commands: ${counter - 1}`;
 
         await sock.sendMessage(from, { text: menuMessage });
     }

@@ -1,25 +1,48 @@
-// joke.js
+// joke.js - Fully upgraded with JSON + API support
+const fetch = require("node-fetch");
+const jokes = require("../data/jokes.json"); // Local fallback jokes
+
+let lastJokeIndex = -1; // Prevent sending the same joke consecutively
+
 module.exports = {
-    name: 'joke',
-    description: 'Sends a random funny joke',
+    name: "joke",
+    description: "Sends a random funny joke",
     execute: async (sock, msg, args) => {
-        const from = msg.key.remoteJid; // same style as riddle & quote
+        const from = msg.key.remoteJid;
 
-        const jokes = [
-            "😂 Why don’t skeletons fight each other? They don’t have the guts!",
-            "🤣 I told my computer I needed a break… now it won’t stop sending me Kit-Kats!",
-            "😅 Why can’t your nose be 12 inches long? Because then it would be a foot!",
-            "😆 What do you call fake spaghetti? An *impasta*!",
-            "🙃 Why did the math book look sad? Because it had too many problems.",
-            "😎 Parallel lines have so much in common… it’s a shame they’ll never meet."
-        ];
+        try {
+            // Try fetching a live joke from JokeAPI
+            const response = await fetch("https://v2.jokeapi.dev/joke/Any?type=single");
+            const data = await response.json();
+            const apiJoke = data.joke;
 
-        // Pick a random joke
-        const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
+            if (apiJoke) {
+                await sock.sendMessage(from, {
+                    text: `😂 *Joke (Live API)*\n\n${apiJoke}`
+                });
+                return; // Sent API joke
+            }
+        } catch (err) {
+            console.error("API fetch failed, using local jokes:", err);
+        }
 
-        // Build message
-        const jokeMessage = `🎭 *Here’s a Joke for You:*\n${randomJoke}\n\n✨ Type .menu to explore more commands!`;
+        // Fallback to local JSON jokes
+        if (!jokes || jokes.length === 0) {
+            await sock.sendMessage(from, { text: "⚠️ No jokes available at the moment." });
+            return;
+        }
 
-        await sock.sendMessage(from, { text: jokeMessage });
+        // Pick a random joke different from last one
+        let randomIndex;
+        do {
+            randomIndex = Math.floor(Math.random() * jokes.length);
+        } while (randomIndex === lastJokeIndex && jokes.length > 1);
+
+        lastJokeIndex = randomIndex;
+        const randomJoke = jokes[randomIndex];
+
+        await sock.sendMessage(from, {
+            text: `😂 *Joke*\n\n${randomJoke}\n\n✨ Type .menu to explore more commands!`
+        });
     }
 };

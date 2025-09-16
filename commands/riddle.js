@@ -1,31 +1,42 @@
+// riddle.js - Fully upgraded with JSON support
+const riddles = require("../data/riddles.json"); // Local riddles JSON
+
+let lastRiddleIndex = -1; // Prevent consecutive repeat
+
 module.exports = {
     name: "riddle",
     description: "Sends a fun riddle to challenge your mind",
-    async execute(sock, msg, args) {
+    execute: async (sock, msg, args) => {
         const from = msg.key.remoteJid;
 
-        // Expanded riddles array with answers
-        const riddles = [
-            { question: "🧩 I speak without a mouth and hear without ears. I have nobody, but I come alive with the wind. What am I?", answer: "An echo" },
-            { question: "🧩 The more you take, the more you leave behind. What am I?", answer: "Footsteps" },
-            { question: "🧩 I’m tall when I’m young, and I’m short when I’m old. What am I?", answer: "A candle" },
-            { question: "🧩 What has keys but can’t open locks?", answer: "A piano" },
-            { question: "🧩 What has hands but can’t clap?", answer: "A clock" },
-            { question: "🧩 What has a head, a tail, is brown, and has no legs?", answer: "A penny" },
-            { question: "🧩 I’m light as a feather, yet the strongest person can’t hold me for long. What am I?", answer: "Breath" },
-            { question: "🧩 I have cities but no houses, forests but no trees, and water but no fish. What am I?", answer: "A map" },
-            { question: "🧩 What can travel around the world while staying in a corner?", answer: "A stamp" },
-            { question: "🧩 What has an eye but cannot see?", answer: "A needle" }
-        ];
+        if (!riddles || riddles.length === 0) {
+            await sock.sendMessage(from, { text: "⚠️ No riddles available at the moment." });
+            return;
+        }
 
-        // Pick a random riddle
-        const selected = riddles[Math.floor(Math.random() * riddles.length)];
+        // Pick a random riddle index different from last
+        let randomIndex;
+        do {
+            randomIndex = Math.floor(Math.random() * riddles.length);
+        } while (randomIndex === lastRiddleIndex && riddles.length > 1);
+
+        lastRiddleIndex = randomIndex;
+
+        const selectedRiddle = riddles[randomIndex];
 
         // If user types ".riddle answer", show the answer
         if (args[0] && args[0].toLowerCase() === "answer") {
-            await sock.sendMessage(from, { text: `📝 *Answer:* ${selected.answer}\n\n👉 Type *.riddle* to get a new riddle!` });
+            // Extract answer after "—" if using riddles.json formatted like: "Question — Answer"
+            const answer = selectedRiddle.split("—")[1]?.trim() || "Answer not available";
+            await sock.sendMessage(from, {
+                text: `📝 *Answer:* ${answer}\n\n👉 Type *.riddle* to get a new riddle!`
+            });
         } else {
-            await sock.sendMessage(from, { text: `🤔 *Riddle Time!* 🤔\n\n${selected.question}\n\n💡 Tip: Type *.riddle answer* to see the answer.` });
+            // Show riddle question
+            const question = selectedRiddle.split("—")[0].trim();
+            await sock.sendMessage(from, {
+                text: `🤔 *Riddle Time!* 🤔\n\n${question}\n\n💡 Tip: Type *.riddle answer* to see the answer!`
+            });
         }
     }
 };
