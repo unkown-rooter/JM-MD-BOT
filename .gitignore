@@ -1,5 +1,33 @@
-auth/
+# Node modules
+node_modules/
+
+# Downloads folder (big media files)
+downloads/
+
+# Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Environment files
 .env
+
+# Mac system files
+.DS_Store
+
+# Termux specific
+.termux/
+
+# Build artifacts (if you ever build your app)
+dist/
+build/
+
+# Package lock (optional, but usually you want to track it)
+# package-lock.json
+
+# VS Code / IDE files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
