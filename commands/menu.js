@@ -8,18 +8,27 @@ module.exports = {
     async execute(sock, msg, args) {
         const from = msg.key.remoteJid;
 
+        // ✅ Send the logo first
+        const logoPath = path.join(__dirname, "../assets/imglogo.png");
+        if (fs.existsSync(logoPath)) {
+            await sock.sendMessage(from, { 
+                image: { url: logoPath },
+                caption: "╭━━━〔 *🤖 JM-MD BOT* 〕━━━╮\n🌟 Welcome to the ultimate bot experience! 🌟"
+            });
+        }
+
         // Load all commands dynamically
         const commandFiles = fs.readdirSync(path.join(__dirname))
             .filter(file => file.endsWith(".js") && file !== "menu.js");
 
-        // Predefined categories (you can add more if needed)
+        // Predefined categories
         const categories = {
             "Fun Commands 🎉": [],
             "Info Commands ℹ️": [],
             "Utility Commands ⚙️": []
         };
 
-        // Assign emojis for each command
+        // Emojis for each command
         const emojis = {
             fact: "🍯",
             joke: "😄",
@@ -42,32 +51,30 @@ module.exports = {
             sticker: "🏷️"
         };
 
-        // Default categorization
         const fun = ["fact", "joke", "riddle", "quote", "sticker"];
         const info = ["info", "owner", "about", "status", "time", "date"];
         const utility = ["download", "ping", "menu", "autoreply", "autoview", "save", "fbdownloader", "calculator", "reminder"];
 
-        // Dynamically load commands and categorize
         for (const file of commandFiles) {
             const command = require(`./${file}`);
             if (fun.includes(command.name)) categories["Fun Commands 🎉"].push(command);
             else if (info.includes(command.name)) categories["Info Commands ℹ️"].push(command);
             else if (utility.includes(command.name)) categories["Utility Commands ⚙️"].push(command);
-            else {
-                // Any new commands not mapped go to Utility by default
-                categories["Utility Commands ⚙️"].push(command);
-            }
+            else categories["Utility Commands ⚙️"].push(command);
         }
 
-        // Build menu message with numbering
-        let menuMessage = `╭━━━〔 *🤖 JM-MD BOT MENU 🤖* 〕━━━╮\n\n`;
+        // Build menu message
+        let menuMessage = "╔══════════════════════╗\n";
+        menuMessage += "║       *JM-MD BOT*     ║\n";
+        menuMessage += "║  Smooth, reliable & fun!  ║\n";
+        menuMessage += "╚══════════════════════╝\n\n";
         let counter = 1;
 
         for (const [cat, cmds] of Object.entries(categories)) {
-            if (cmds.length === 0) continue; // skip empty categories
+            if (cmds.length === 0) continue;
             menuMessage += `*${cat}*\n`;
             for (const cmd of cmds) {
-                const emoji = emojis[cmd.name] || "🔹"; // fallback emoji
+                const emoji = emojis[cmd.name] || "🔹";
                 menuMessage += `${counter}. ${emoji} .${cmd.name} – ${cmd.description}\n`;
                 counter++;
             }
@@ -81,6 +88,7 @@ module.exports = {
 ━━━━━━━━━━━━━━━━━━
 💡 Total Commands: ${counter - 1}`;
 
+        // Send menu text
         await sock.sendMessage(from, { text: menuMessage });
     }
 };
