@@ -9,13 +9,48 @@ module.exports = {
         try {
             const from = msg.key.remoteJid;
 
-            // Load commands dynamically
+            // Load all commands dynamically (exclude about.js)
             const commandsPath = path.join(__dirname);
-            const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"));
+            const commandFiles = fs.readdirSync(commandsPath)
+                .filter(file => file.endsWith(".js") && file !== "about.js");
+
+            // Map commands with emojis
+            const emojis = {
+                fact: "🍯",
+                joke: "😄",
+                riddle: "🧩",
+                quote: "✨",
+                info: "🤖",
+                owner: "👑",
+                about: "📝",
+                status: "📊",
+                time: "⏰",
+                date: "📅",
+                autoreply: "🤖",
+                autoview: "👀",
+                download: "📥",
+                ping: "🏓",
+                save: "💾",
+                fbdownloader: "📹",
+                calculator: "🧮",
+                reminder: "⏱️",
+                sticker: "🏷️",
+                ytdown: "🎵",
+                weather: "🌤️",
+                menu: "📜",
+                dictionary: "🔤",
+                news: "📰"
+            };
+
+            // Build numbered commands list
+            let counter = 1;
             const commandsList = commandFiles
                 .map(file => {
-                    const command = require(`./${file}`);
-                    return `⚡ .${command.name} – ${command.description}`;
+                    const command = require(path.join(commandsPath, file));
+                    const emoji = emojis[command.name] || "⚡";
+                    const line = `${counter}. ${emoji} .${command.name} – ${command.description}`;
+                    counter++;
+                    return line;
                 })
                 .join("\n");
 
@@ -42,20 +77,23 @@ ${commandsList}
 🤖 AutoReply
 👀 AutoView Status
 📥 Downloads
+🌤️ Weather Updates
+🔤 Dictionary Lookup
+📰 Latest News
+🎵 YouTube Downloader
 
 🔮 *Coming Soon*
 🎮 Quizzes & Games
 💡 Motivational Quotes
-🎵 Media Tools (downloaders, converters)
-⚙️ Personalized Commands
+⚙️ Personalized Commands & Media Tools
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-✨ Powered by JM-MD BOT — always learning, always growing! ✨
+✨ *MOTTO:* Smooth, reliable, and fun – just like JM-MD BOT! ✨
 `;
 
             await sock.sendMessage(from, { text: aboutMessage });
         } catch (error) {
-            console.log("Error in about.js:", error);
+            console.error("❌ Error in about.js:", error);
         }
     }
 };

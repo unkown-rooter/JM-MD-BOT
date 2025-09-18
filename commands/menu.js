@@ -11,21 +11,24 @@ module.exports = {
         // ✅ Send the logo first
         const logoPath = path.join(__dirname, "../assets/imglogo.png");
         if (fs.existsSync(logoPath)) {
-            await sock.sendMessage(from, { 
+            await sock.sendMessage(from, {
                 image: { url: logoPath },
                 caption: "╭━━━〔 *🤖 JM-MD BOT* 〕━━━╮\n🌟 Welcome to the ultimate bot experience! 🌟"
             });
         }
 
-        // Load all commands dynamically
-        const commandFiles = fs.readdirSync(path.join(__dirname))
+        // ✅ Load all command files dynamically (excluding menu.js)
+        const commandsPath = path.join(__dirname);
+        const commandFiles = fs.readdirSync(commandsPath)
             .filter(file => file.endsWith(".js") && file !== "menu.js");
 
         // Predefined categories
         const categories = {
             "Fun Commands 🎉": [],
             "Info Commands ℹ️": [],
-            "Utility Commands ⚙️": []
+            "Utility Commands ⚙️": [],
+            "Media Commands 📹": [],
+            "System Commands 🛠️": []
         };
 
         // Emojis for each command
@@ -34,6 +37,11 @@ module.exports = {
             joke: "😄",
             riddle: "🧩",
             quote: "✨",
+            advice: "💡",
+            dictionary: "📖",
+            meme: "😂",
+            weather: "🌦️",
+            news: "📰",
             info: "🤖",
             owner: "👑",
             about: "📝",
@@ -48,19 +56,32 @@ module.exports = {
             fbdownloader: "📹",
             calculator: "🧮",
             reminder: "⏱️",
-            sticker: "🏷️"
+            sticker: "🏷️",
+            ytdown: "🎵"
         };
 
-        const fun = ["fact", "joke", "riddle", "quote", "sticker"];
-        const info = ["info", "owner", "about", "status", "time", "date"];
-        const utility = ["download", "ping", "menu", "autoreply", "autoview", "save", "fbdownloader", "calculator", "reminder"];
+        // Category lists
+        const fun = ["fact", "joke", "riddle", "quote", "advice", "meme", "sticker"];
+        const info = ["info", "owner", "about", "status", "time", "date", "dictionary", "weather", "news"];
+        const utility = ["download", "ping", "menu", "autoreply", "autoview", "save", "calculator", "reminder"];
+        const media = ["fbdownloader", "ytdown"];
+        const system = ["autoview", "autoreply"];
 
+        // ✅ Dynamically require each command only here
         for (const file of commandFiles) {
-            const command = require(`./${file}`);
-            if (fun.includes(command.name)) categories["Fun Commands 🎉"].push(command);
-            else if (info.includes(command.name)) categories["Info Commands ℹ️"].push(command);
-            else if (utility.includes(command.name)) categories["Utility Commands ⚙️"].push(command);
-            else categories["Utility Commands ⚙️"].push(command);
+            try {
+                const command = require(path.join(commandsPath, file));
+                if (!command?.name) continue;
+
+                if (fun.includes(command.name)) categories["Fun Commands 🎉"].push(command);
+                else if (info.includes(command.name)) categories["Info Commands ℹ️"].push(command);
+                else if (utility.includes(command.name)) categories["Utility Commands ⚙️"].push(command);
+                else if (media.includes(command.name)) categories["Media Commands 📹"].push(command);
+                else if (system.includes(command.name)) categories["System Commands 🛠️"].push(command);
+                else categories["Utility Commands ⚙️"].push(command); // fallback
+            } catch (err) {
+                console.error(`❌ Error loading ${file}:`, err);
+            }
         }
 
         // Build menu message

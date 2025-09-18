@@ -1,39 +1,37 @@
+// save.js - Auto save status when you reply
 const fs = require("fs");
 const path = require("path");
 const { downloadMediaMessage } = require("@whiskeysockets/baileys");
 
 module.exports = {
     name: "save",
-    description: "Download a status by replying and typing .save",
+    description: "Automatically saves a replied status to internal storage",
     execute: async (sock, msg, args) => {
         try {
-            const from = msg.key.remoteJid;
+            // Only act if this is a reply
+            const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+            if (!quoted) return; // no reply = ignore silently
 
-            // Check if this message is a reply
-            if (!msg.message.extendedTextMessage?.contextInfo?.quotedMessage) {
-                await sock.sendMessage(from, { text: "❌ Please reply to a status to download it using .save" });
-                return;
-            }
-
-            const quoted = msg.message.extendedTextMessage.contextInfo.quotedMessage;
-
-            // Check if the replied message has media
+            // Supported media types
             const mediaTypes = ["imageMessage", "videoMessage", "stickerMessage", "audioMessage"];
             const type = mediaTypes.find(t => quoted[t]);
-            if (!type) {
-                await sock.sendMessage(from, { text: "❌ The replied message does not contain downloadable media." });
-                return;
-            }
+            if (!type) return; // not media = ignore silently
 
-            // Download media
-            const buffer = await downloadMediaMessage(quoted, "buffer", {}, { logger: console });
+            // Download media buffer
+            const buffer = await downloadMediaMessage(
+                { message: quoted }, // wrap in object
+                "buffer",
+                {},
+                { logger: console }
+            );
 
-            // Prepare file path
+            // File extension
             const ext = type.includes("image") ? ".jpg" :
                         type.includes("video") ? ".mp4" :
                         type.includes("audio") ? ".mp3" : ".webp";
 
-            const folder = path.join(__dirname, "../downloads/status");
+            // Save path → directly to internal storage
+            const folder = "/storage/emulated/0/JM-BOT/Status";
             if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true });
 
             const filename = `status_${Date.now()}${ext}`;
@@ -41,11 +39,10 @@ module.exports = {
 
             fs.writeFileSync(filepath, buffer);
 
-            await sock.sendMessage(from, { text: `✅ Status downloaded successfully!\nSaved as: ${filename}` });
-
+            // No message sent back — stays silent
         } catch (error) {
-            console.error("Error in .save command:", error);
-            await sock.sendMessage(msg.key.remoteJid, { text: "⚠️ Failed to download status. Try again!" });
+            console.error("Error auto-saving status:", error);
+            // No feedback to user, just log it
         }
     }
 };
