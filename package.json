@@ -12,11 +12,13 @@
   "type": "commonjs",
   "dependencies": {
     "@whiskeysockets/baileys": "^7.0.0-rc.2",
+    "baileys": "^7.0.0-rc.3",
     "chalk": "^4.1.2",
     "dotenv": "^17.2.2",
     "fb-video-downloader": "^1.0.3",
     "figlet": "^1.9.1",
     "mathjs": "^14.7.0",
+    "node-cache": "^5.1.2",
     "node-fetch": "^2.7.0",
     "node-webpmux": "^3.2.1",
     "pino": "^9.9.5",

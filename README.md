@@ -1,4 +1,4 @@
-# ![JM-MD BOT Logo](assets/imglogo.png)  
+# ![JM-MD BOT Logo](assets/imglogo.png)
 # JM-MD BOT 🤖
 
 **JM-MD BOT** is a **WhatsApp Multi-Device Bot** built using [Baileys](https://github.com/WhiskeySockets/Baileys).  
@@ -20,9 +20,9 @@ It allows you to automate WhatsApp tasks, run commands, and manage chats in a mo
   - `.menu` → Shows available commands
   - `.about` → Info about the bot
   - `.owner` → Owner details
-- 🔁 Auto-Reply System  
-  - `autoreply.js` handles all normal chats automatically.  
-  - Status stored in `autoreply-status.json`.  
+- 🔁 Auto-Reply System
+  - `autoreply.js` handles all normal chats automatically.
+  - Status stored in `autoreply-status.json`.
   - Custom responses stored in `autoreplies.json`.
 - 👀 AutoView toggle (`autoview.js`)
 - 🧮 Calculator command (`calculator.js`)
