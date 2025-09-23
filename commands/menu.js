@@ -2,11 +2,15 @@
 const fs = require("fs");
 const path = require("path");
 
+// Track users waiting for command selection
+const awaitingSelection = {};
+
 module.exports = {
     name: "menu",
-    description: "Displays all available commands",
-    async execute(sock, msg, args) {
+    description: "Displays all available commands and allows number selection",
+    async execute(sock, msg, args, allCommandsGlobal) {
         const from = msg.key.remoteJid;
+        const userId = msg.key.participant || from; // unique per user
 
         // Path to logo
         const logoPath = path.join(__dirname, "../assets/imglogo.png");
@@ -16,7 +20,7 @@ module.exports = {
         const commandFiles = fs.readdirSync(commandsPath)
             .filter(file => file.endsWith(".js") && file !== "menu.js");
 
-        // Preload all commands once
+        // Preload all commands
         const allCommands = [];
         for (const file of commandFiles) {
             try {
@@ -26,6 +30,9 @@ module.exports = {
                 console.error(`❌ Error loading ${file}:`, err);
             }
         }
+
+        // Use global passed commands if provided (optional)
+        const commandsList = allCommandsGlobal || allCommands;
 
         // Predefined categories
         const categories = {
@@ -55,7 +62,7 @@ module.exports = {
         const system = ["autoview", "autoreply"];
 
         // Assign commands to categories
-        for (const cmd of allCommands) {
+        for (const cmd of commandsList) {
             if (fun.includes(cmd.name)) categories["Fun Commands 🎉"].push(cmd);
             else if (info.includes(cmd.name)) categories["Info Commands ℹ️"].push(cmd);
             else if (utility.includes(cmd.name)) categories["Utility Commands ⚙️"].push(cmd);
@@ -70,15 +77,18 @@ module.exports = {
         menuMessage += "║ Smooth, reliable & fun! ║\n";
         menuMessage += "╚══════════════════════╝\n\n";
 
+        menuMessage += "📌 Press the number to open a command\n\n";
+
         let counter = 1;
+        const commandMap = {}; // Map numbers to command objects
 
         for (const [cat, cmds] of Object.entries(categories)) {
             if (cmds.length === 0) continue;
             menuMessage += `*${cat}*\n`;
             for (const cmd of cmds) {
                 const emoji = emojis[cmd.name] || "🔹";
-                // Only tech emoji, no logo
                 menuMessage += `${counter}. ${emoji} .${cmd.name} – ${cmd.description}\n`;
+                commandMap[counter] = cmd; // map number to command
                 counter++;
             }
             menuMessage += `\n`;
@@ -94,12 +104,44 @@ module.exports = {
         // Send menu text
         await sock.sendMessage(from, { text: menuMessage });
 
-        // Send actual logo image at the bottom
+        // Send logo image
         if (fs.existsSync(logoPath)) {
             await sock.sendMessage(from, {
                 image: { url: logoPath },
                 caption: "🌟 Welcome to the ultimate JM-MD BOT experience! 🌟"
             });
         }
+
+        // Mark user as awaiting selection
+        awaitingSelection[userId] = {
+            commandMap
+        };
+    },
+
+    // Function to handle number replies (call from your main message handler)
+    handleReply: async (sock, msg) => {
+        const from = msg.key.remoteJid;
+        const userId = msg.key.participant || from;
+        const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
+        if (!text) return;
+
+        if (!awaitingSelection[userId]) return; // user not in menu selection
+
+        const num = parseInt(text);
+        if (isNaN(num)) return; // not a number
+
+        const cmdObj = awaitingSelection[userId].commandMap[num];
+        if (!cmdObj) return; // invalid number
+
+        // Execute the command
+        try {
+            await cmdObj.execute(sock, msg, []);
+        } catch (err) {
+            console.error(`❌ Error executing command ${cmdObj.name}:`, err);
+            await sock.sendMessage(from, { text: "❌ Failed to execute the selected command." });
+        }
+
+        // Clear user from awaiting selection
+        delete awaitingSelection[userId];
     }
 };

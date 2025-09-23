@@ -1,0 +1,34 @@
+{
+  "botName": "JM-MD BOT",
+  "description": "A WhatsApp Multi-Device Bot built with Baileys — fast, reliable, and interactive.",
+  "owner": {
+    "name": "JapaneseMonk",
+    "number": "+254743445041"
+  },
+  "motto": "🤜🤛 OUR MOTTO: No Errors, Only Upgrades 🤜🤛",
+  "version": "1.0.0",
+  "links": {
+    "github": "https://github.com/unkown-rooter/JM-MD-BOT",
+    "docs": "https://github.com/unkown-rooter/JM-MD-BOT#readme"
+  },
+  "system": {
+    "host": "localhost",
+    "platform": "android (arm64)",
+    "memory": "64MB / 2765MB"
+  },
+  "features": [
+    "Fun Facts",
+    "Jokes",
+    "Quotes",
+    "Riddles",
+    "AutoReply",
+    "AutoView Status",
+    "Downloads"
+  ],
+  "upcoming": [
+    "Quizzes & Games",
+    "Motivational Quotes",
+    "Media Tools (downloaders, converters)",
+    "Personalized Commands"
+  ]
+}

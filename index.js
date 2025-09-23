@@ -8,6 +8,9 @@ const path = require("path");
 // ✅ AutoReply loaded once
 const autoReply = require("./commands/autoreply");
 
+// ✅ Menu command
+const menuCommand = require("./commands/menu.js");
+
 // ✅ Async config (non-blocking)
 const configPath = path.join(__dirname, "data", "config.json");
 let config = { autoview: false };
@@ -18,6 +21,20 @@ fs.promises.readFile(configPath, "utf8")
   })
   .catch(() => {
     console.log("⚠️ No config found, using default settings.");
+  });
+
+// ✅ Preload all commands once (speed optimization)
+const commandsDir = path.join(__dirname, "commands");
+const commands = new Map();
+fs.readdirSync(commandsDir)
+  .filter(file => file.endsWith(".js"))
+  .forEach(file => {
+    try {
+      const cmd = require(path.join(commandsDir, file));
+      if (cmd?.name) commands.set(cmd.name, cmd);
+    } catch (err) {
+      console.error(`❌ Error loading ${file}:`, err);
+    }
   });
 
 async function startSock() {
@@ -65,16 +82,20 @@ async function startSock() {
         return;
       }
 
-      // ✅ Command handler
+      const userId = msg.key.participant || from;
+
+      // ✅ Handle menu number replies first
+      await menuCommand.handleReply(sock, msg);
+
+      // ✅ Command handler (commands start with .)
       if (body.startsWith(".")) {
         const args = body.slice(1).trim().split(/ +/);
         const commandName = args.shift().toLowerCase();
 
-        const commandPath = path.join(__dirname, "commands", `${commandName}.js`);
-        if (fs.existsSync(commandPath)) {
+        const command = commands.get(commandName);
+        if (command) {
           try {
-            const command = require(commandPath);
-            await command.execute(sock, msg, args);
+            await command.execute(sock, msg, args, Array.from(commands.values()));
           } catch (err) {
             console.error("Command error:", err);
             await sock.sendMessage(from, {
