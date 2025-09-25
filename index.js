@@ -63,7 +63,7 @@ async function startSock() {
   sock.ev.on("messages.upsert", async (m) => {
     try {
       const msg = m.messages[0];
-      if (!msg.message || msg.key.fromMe) return;
+      if (!msg.message) return;
 
       const from = msg.key.remoteJid;
       const body =
@@ -82,10 +82,13 @@ async function startSock() {
         return;
       }
 
-      const userId = msg.key.participant || from;
+      // ✅ Allow BOT OWNER (self) to test commands too
+      const isSelf = msg.key.fromMe;
 
       // ✅ Handle menu number replies first
-      await menuCommand.handleReply(sock, msg);
+      if (menuCommand?.handleReply) {
+        await menuCommand.handleReply(sock, msg);
+      }
 
       // ✅ Command handler (commands start with .)
       if (body.startsWith(".")) {
