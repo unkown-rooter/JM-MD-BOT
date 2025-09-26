@@ -1,3 +1,4 @@
 {
-    "autoview": true
+  "autoview": true,
+  "autoreply": false
 }

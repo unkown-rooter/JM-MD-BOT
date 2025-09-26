@@ -4,15 +4,17 @@ const { showMenu, allCommands } = require("./menuCore");
 async function execute(sock, msg, args) {
   const from = msg.key.remoteJid;
 
-  // Send the full menu
-  await sock.sendMessage(from, { text: showMenu() });
+  // 🐾 MOTTO header
+  const motto = "🐾 JM-MD BOT 🐾\nStable · Smart · Simple\n\n";
+
+  // Send the full menu with motto on top
+  await sock.sendMessage(from, { text: motto + showMenu() });
 }
 
 // ✅ Handle user replies with numbers
 async function handleReply(sock, msg) {
   const from = msg.key.remoteJid;
 
-  // Extract text safely
   const body =
     msg.message?.conversation ||
     msg.message?.extendedTextMessage?.text ||
@@ -27,9 +29,9 @@ async function handleReply(sock, msg) {
     const emoji = "✨";
 
     await sock.sendMessage(from, {
-      text: `${emoji} *${cmd.name.toUpperCase()} COMMAND*\n\nDescription: ${
+      text: `${emoji} *${cmd.name.toUpperCase()} COMMAND*\n\n📖 Description: ${
         cmd.description || "No description available"
-      }\n\n🚀 JM-MD BOT Motto:\n*Smooth, reliable, and fun – just like JM-MD BOT!* ✨`,
+      }\n\n🚀 Motto:\n*Stable · Smart · Simple* 🐾`,
     });
   }
 }
