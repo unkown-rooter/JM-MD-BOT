@@ -13,7 +13,7 @@ const menuCommand = require("./commands/menu.js");
 
 // ✅ Async config (non-blocking)
 const configPath = path.join(__dirname, "data", "config.json");
-let config = { autoview: false };
+let config = { autoview: false, autoreply: true }; // added autoreply toggle
 
 fs.promises.readFile(configPath, "utf8")
   .then(data => {
@@ -23,12 +23,12 @@ fs.promises.readFile(configPath, "utf8")
     console.log("⚠️ No config found, using default settings.");
   });
 
-// ✅ Preload all commands once (speed optimization)
+// ✅ Preload all commands once
 const commandsDir = path.join(__dirname, "commands");
 const commands = new Map();
 fs.readdirSync(commandsDir)
   .filter(file => file.endsWith(".js"))
-  .forEach(file => {
+  .forEach(file => {                                                                                                                            
     try {
       const cmd = require(path.join(commandsDir, file));
       if (cmd?.name) commands.set(cmd.name, cmd);
@@ -37,13 +37,15 @@ fs.readdirSync(commandsDir)
     }
   });
 
+// === Add your number here to whitelist ===
+const ownerNumber = "254743445041"; // your WhatsApp number
+
 async function startSock() {
   const { state, saveCreds } = await useMultiFileAuthState("auth");
   const sock = makeWASocket({ auth: state });
 
   sock.ev.on("creds.update", saveCreds);
 
-  // ✅ QR + connection updates
   sock.ev.on("connection.update", (update) => {
     const { connection, qr } = update;
     if (qr) {
@@ -59,7 +61,6 @@ async function startSock() {
     }
   });
 
-  // ✅ Handle messages
   sock.ev.on("messages.upsert", async (m) => {
     try {
       const msg = m.messages[0];
@@ -85,9 +86,15 @@ async function startSock() {
       // ✅ Allow BOT OWNER (self) to test commands too
       const isSelf = msg.key.fromMe;
 
+      // Track whether a command was executed
+      let commandExecuted = false;
+
       // ✅ Handle menu number replies first
       if (menuCommand?.handleReply) {
         await menuCommand.handleReply(sock, msg);
+        if (body.startsWith(".menu")) {
+          commandExecuted = true; // ✅ Treat menu as executed
+        }
       }
 
       // ✅ Command handler (commands start with .)
@@ -99,24 +106,38 @@ async function startSock() {
         if (command) {
           try {
             await command.execute(sock, msg, args, Array.from(commands.values()));
+            commandExecuted = true;
           } catch (err) {
             console.error("Command error:", err);
             await sock.sendMessage(from, {
               text: "⚠️ Oops! Something went wrong executing that command.",
             });
+            commandExecuted = true;
           }
         } else {
           await sock.sendMessage(from, {
             text: `❌ Unknown command: .${commandName}\nType .menu to see all commands.`,
           });
+          commandExecuted = true;
         }
       }
 
-      // ✅ AutoReply after commands
-      try {
-        await autoReply.execute(sock, msg, []);
-      } catch (err) {
-        console.error("AutoReply error:", err);
+      // ✅ AutoReply only if:
+      // 1. No command executed
+      // 2. Message is NOT a command
+      // 3. Auto-reply is ON
+      // 4. Sender is NOT the owner
+      if (
+        !commandExecuted &&
+        !body.startsWith(".") &&
+        config.autoreply === true &&
+        !from.includes(ownerNumber)
+      ) {
+        try {
+          await autoReply.execute(sock, msg, []);
+        } catch (err) {
+          console.error("AutoReply error:", err);
+        }
       }
     } catch (e) {
       console.error("messages.upsert error:", e);

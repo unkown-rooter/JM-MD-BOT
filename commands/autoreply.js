@@ -1,14 +1,34 @@
-// autoreply.js - Fully upgraded with 10+ friendly features
+// autoreply.js - Spam-proof, only one reply per message
 const fs = require("fs");
 const path = require("path");
 
-// Load chats.json
+// Paths to your data files
 const chatsPath = path.join(__dirname, "../data/chats.json");
+const autorepliesPath = path.join(__dirname, "../autoreplies.json");
+const statusPath = path.join(__dirname, "../autoreply-status.json");
+
+// Load chats.json
 let chats = [];
 try {
     chats = JSON.parse(fs.readFileSync(chatsPath, "utf-8"));
 } catch (err) {
     console.error("Error loading chats.json:", err);
+}
+
+// Load autoreplies.json
+let autoreplies = [];
+try {
+    autoreplies = JSON.parse(fs.readFileSync(autorepliesPath, "utf-8"));
+} catch (err) {
+    console.error("Error loading autoreplies.json:", err);
+}
+
+// Load autoreply-status.json
+let autoreplyStatus = {};
+try {
+    autoreplyStatus = JSON.parse(fs.readFileSync(statusPath, "utf-8"));
+} catch (err) {
+    console.log("No autoreply status file found, starting fresh.");
 }
 
 module.exports = {
@@ -17,79 +37,95 @@ module.exports = {
     execute: async (sock, msg, args) => {
         try {
             const from = msg.key.remoteJid;
-
-            // Safely get the message text
-            const body =
-                msg.message?.conversation ||
-                msg.message?.extendedTextMessage?.text ||
-                "";
-
-            if (!body) return;
+            const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || "";
+            if (!body || body.startsWith(".")) return; // Ignore commands
 
             const text = body.toLowerCase();
             const hour = new Date().getHours();
 
+            // ✅ Only one reply per message
+            let replied = false;
+
             // 1️⃣ Time-based greetings
-            if (text.includes("good morning") && hour < 12) {
+            if (!replied && text.includes("good morning") && hour < 12) {
                 await sock.sendMessage(from, { text: "🌞 Good morning, buddy! Start your day with a fun fact: Type .fact" });
-                return;
-            }
-            if (text.includes("good afternoon") && hour >= 12 && hour < 18) {
+                replied = true;
+            } else if (!replied && text.includes("good afternoon") && hour >= 12 && hour < 18) {
                 await sock.sendMessage(from, { text: "☀️ Good afternoon, buddy! Need a laugh? Type .joke" });
-                return;
-            }
-            if (text.includes("good night") && hour >= 18) {
-                await sock.sendMessage(from, { text: "🌙 Good night, buddy! Sweet dreams 😴 Don’t forget to relax!" });
-                return;
+                replied = true;
+            } else if (!replied && text.includes("good night") && hour >= 18) {
+                await sock.sendMessage(from, { text: "🌙 Good night, buddy! Sweet dreams 😴" });
+                replied = true;
             }
 
-            // 2️⃣ Emoji reactions for moods
-            const moodReplies = {
+            // 2️⃣ Mood-based replies
+            const moods = {
                 good: ["👍 That’s awesome! Keep shining 🌟", "😄 Great to hear! Type .fact for more fun!"],
                 sad: ["😔 Cheer up, buddy! A joke can help: .joke", "💪 Don’t worry, tomorrow is a new day!"],
                 tired: ["😴 Time to rest, buddy! Good night 🌙", "☕ Take a short break! Then try .fact to refresh!"],
                 excited: ["🎉 Yay! That’s exciting! Try a riddle: .riddle", "🤩 Feeling pumped? Type .quote for motivation!"]
             };
-            for (const mood in moodReplies) {
-                if (text.includes(mood)) {
-                    const reply = moodReplies[mood][Math.floor(Math.random() * moodReplies[mood].length)];
+            for (const mood in moods) {
+                if (!replied && text.includes(mood)) {
+                    const reply = moods[mood][Math.floor(Math.random() * moods[mood].length)];
                     await sock.sendMessage(from, { text: reply });
-                    return;
+                    replied = true;
+                    break;
                 }
             }
 
-            // 3️⃣–8️⃣ Dynamic trigger matching using chats.json
+            // 3️⃣ Chats triggers from chats.json
             for (const chat of chats) {
-                if (text.includes(chat.trigger.toLowerCase())) {
+                if (!replied && text.includes(chat.trigger.toLowerCase())) {
                     const replyText = Array.isArray(chat.reply)
                         ? chat.reply[Math.floor(Math.random() * chat.reply.length)]
                         : chat.reply;
                     await sock.sendMessage(from, { text: replyText });
-                    return;
+                    replied = true;
+                    break;
                 }
             }
 
-            // 9️⃣ Encourage daily interactions (fun fact, joke, quote)
-            const dailyTips = [
-                "🧠 Want to learn something new? Type .fact",
-                "😂 Feeling down? Type .joke for a laugh",
-                "💡 Need motivation? Type .quote",
-                "🧩 Want a brain teaser? Type .riddle"
-            ];
-            if (Math.random() < 0.2) { // 20% chance to suggest a tip
-                const tip = dailyTips[Math.floor(Math.random() * dailyTips.length)];
-                await sock.sendMessage(from, { text: tip });
-                return;
+            // 4️⃣ Autoreplies.json triggers
+            for (const ar of autoreplies) {
+                if (!replied && text.includes(ar.trigger.toLowerCase())) {
+                    const replyText = Array.isArray(ar.reply)
+                        ? ar.reply[Math.floor(Math.random() * ar.reply.length)]
+                        : ar.reply;
+                    await sock.sendMessage(from, { text: replyText });
+                    replied = true;
+                    break;
+                }
             }
 
-            // 10️⃣ Friendly fallback for unknown messages
-            const fallbackReplies = [
-                "🤔 I’m not sure what you mean, buddy. Try .menu to see what I can do!",
-                "😅 I didn’t understand that. Type .menu to see my commands!",
-                "🤖 I’m here to help! Check .menu for what I can do!"
-            ];
-            const fallback = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)];
-            await sock.sendMessage(from, { text: fallback });
+            // 5️⃣ Daily tips (20% chance)
+            if (!replied && Math.random() < 0.2) {
+                const tips = [
+                    "🧠 Want to learn something new? Type .fact",
+                    "😂 Feeling down? Type .joke for a laugh",
+                    "💡 Need motivation? Type .quote",
+                    "🧩 Want a brain teaser? Type .riddle"
+                ];
+                const tip = tips[Math.floor(Math.random() * tips.length)];
+                await sock.sendMessage(from, { text: tip });
+                replied = true;
+            }
+
+            // 6️⃣ Friendly fallback
+            if (!replied) {
+                const fallback = [
+                    "🤔 I’m not sure what you mean, buddy. Try .menu to see what I can do!",
+                    "😅 I didn’t understand that. Type .menu to see my commands!",
+                    "🤖 I’m here to help! Check .menu for what I can do!"
+                ];
+                const fb = fallback[Math.floor(Math.random() * fallback.length)];
+                await sock.sendMessage(from, { text: fb });
+                replied = true;
+            }
+
+            // ✅ Optional: Save autoreplyStatus to prevent repetition
+            autoreplyStatus[from] = body;
+            fs.writeFileSync(statusPath, JSON.stringify(autoreplyStatus, null, 2));
 
         } catch (error) {
             console.error("Error in autoreply.js:", error);
