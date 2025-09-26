@@ -13,7 +13,7 @@ const menuCommand = require("./commands/menu.js");
 
 // ✅ Async config (non-blocking)
 const configPath = path.join(__dirname, "data", "config.json");
-let config = { autoview: false, autoreply: true }; // added autoreply toggle
+let config = { autoview: false, autoreply: true };
 
 fs.promises.readFile(configPath, "utf8")
   .then(data => {
@@ -28,7 +28,7 @@ const commandsDir = path.join(__dirname, "commands");
 const commands = new Map();
 fs.readdirSync(commandsDir)
   .filter(file => file.endsWith(".js"))
-  .forEach(file => {                                                                                                                            
+  .forEach(file => {
     try {
       const cmd = require(path.join(commandsDir, file));
       if (cmd?.name) commands.set(cmd.name, cmd);
@@ -37,8 +37,8 @@ fs.readdirSync(commandsDir)
     }
   });
 
-// === Add your number here to whitelist ===
-const ownerNumber = "254743445041"; // your WhatsApp number
+// === Add your number here to whitelist from auto-reply ===
+const ownerNumber = "254743445041"; // your WhatsApp number without '+'
 
 async function startSock() {
   const { state, saveCreds } = await useMultiFileAuthState("auth");
@@ -67,14 +67,11 @@ async function startSock() {
       if (!msg.message) return;
 
       const from = msg.key.remoteJid;
-      const body =
-        msg.message.conversation ||
-        msg.message.extendedTextMessage?.text ||
-        "";
+      const body = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
 
       // 🔥 AUTOVIEW FEATURE
-      if (msg.key.remoteJid === "status@broadcast") {
-        if (config.autoview === true) {
+      if (from === "status@broadcast") {
+        if (config.autoview) {
           await sock.readMessages([msg.key]);
           console.log("✅ Status auto-viewed");
         } else {
@@ -83,26 +80,21 @@ async function startSock() {
         return;
       }
 
-      // ✅ Allow BOT OWNER (self) to test commands too
-      const isSelf = msg.key.fromMe;
-
-      // Track whether a command was executed
+      // ✅ Track if a command executed
       let commandExecuted = false;
 
-      // ✅ Handle menu number replies first
+      // ✅ Handle menu replies first
       if (menuCommand?.handleReply) {
         await menuCommand.handleReply(sock, msg);
-        if (body.startsWith(".menu")) {
-          commandExecuted = true; // ✅ Treat menu as executed
-        }
+        if (body.startsWith(".menu")) commandExecuted = true;
       }
 
-      // ✅ Command handler (commands start with .)
+      // ✅ Command handler (messages starting with '.')
       if (body.startsWith(".")) {
         const args = body.slice(1).trim().split(/ +/);
         const commandName = args.shift().toLowerCase();
-
         const command = commands.get(commandName);
+
         if (command) {
           try {
             await command.execute(sock, msg, args, Array.from(commands.values()));
@@ -110,35 +102,27 @@ async function startSock() {
           } catch (err) {
             console.error("Command error:", err);
             await sock.sendMessage(from, {
-              text: "⚠️ Oops! Something went wrong executing that command.",
+              text: "⚠️ Oops! Something went wrong executing that command."
             });
             commandExecuted = true;
           }
         } else {
           await sock.sendMessage(from, {
-            text: `❌ Unknown command: .${commandName}\nType .menu to see all commands.`,
+            text: `❌ Unknown command: .${commandName}\nType .menu to see all commands.`
           });
           commandExecuted = true;
         }
       }
 
-      // ✅ AutoReply only if:
-      // 1. No command executed
-      // 2. Message is NOT a command
-      // 3. Auto-reply is ON
-      // 4. Sender is NOT the owner
-      if (
-        !commandExecuted &&
-        !body.startsWith(".") &&
-        config.autoreply === true &&
-        !from.includes(ownerNumber)
-      ) {
+      // ✅ AutoReply (everyone except owner)
+      if (!commandExecuted && !body.startsWith(".") && config.autoreply && !from.includes(ownerNumber)) {
         try {
           await autoReply.execute(sock, msg, []);
         } catch (err) {
           console.error("AutoReply error:", err);
         }
       }
+
     } catch (e) {
       console.error("messages.upsert error:", e);
     }
