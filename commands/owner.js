@@ -1,3 +1,4 @@
+// commands/owner.js
 const config = require("../config");
 
 module.exports = {
@@ -6,17 +7,22 @@ module.exports = {
     execute: async (sock, msg, args) => {
         const from = msg.key.remoteJid;
 
-        const ownerMessage = `
-👑 *JM-MD BOT Owner Information*
+        // ✅ Use values from config.js or fallback defaults
+        const ownerName = config.OWNER_NAME || "JapaneseMonk";
+        const ownerNumber = config.OWNER_NUMBER || "+254743445041";
+        const botName = config.BOT_NAME || "JM-MD BOT";
 
-📛 *Name:* ${config.ownerName}
-📱 *WhatsApp:* wa.me/${config.ownerNumber.replace(/[^0-9]/g, "")}
-🤖 *Bot Name:* ${config.botName}
+        const ownerMessage = `
+👑 *${botName} - Owner Information*
+
+📛 *Name:* ${ownerName}
+📱 *WhatsApp:* wa.me/${ownerNumber.replace(/[^0-9]/g, "")}
+🤖 *Bot Name:* ${botName}
 
 🌟 *Special Notes:*
 - Respect the owner’s time 🙏
 - Contact only for serious inquiries
-- Support the growth of JM-MD BOT 🚀
+- Support the growth of ${botName} 🚀
 
 🚀 *Coming Soon*:
 - Personalized commands

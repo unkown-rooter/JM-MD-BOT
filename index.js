@@ -42,7 +42,13 @@ const ownerNumber = "254743445041"; // your WhatsApp number without '+'
 
 async function startSock() {
   const { state, saveCreds } = await useMultiFileAuthState("auth");
-  const sock = makeWASocket({ auth: state });
+
+  // ✅ FIX: enable QR printing
+  const sock = makeWASocket({
+    auth: state,
+    printQRInTerminal: true,   // 👈 added this line
+    browser: ["JM-MD BOT", "Chrome", "1.0"],
+  });
 
   sock.ev.on("creds.update", saveCreds);
 
