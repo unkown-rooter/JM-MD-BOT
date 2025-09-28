@@ -1,9 +1,9 @@
-// fact.js - Fully upgraded with numbered categories, history, quiz, emojis, and API + JSON support
+// commands/fact.js - Fully upgraded JM-MD BOT version
 const fetch = require("node-fetch");
-const facts = require("../data/facts.json"); // JSON facts with optional category field
+const facts = require("../data/facts.json"); // local JSON facts with optional category
 const usersHistory = {}; // Tracks fact history per user
 
-let lastFactIndex = -1; // Prevent sending same fact consecutively globally
+let lastFactIndex = -1; // Prevent sending the same fact consecutively globally
 
 // Numbered category map
 const categories = {
@@ -40,10 +40,9 @@ module.exports = {
         const category = categories[numArg] || "random";
 
         try {
-            // Try fetching from API
+            // 1️⃣ Try fetching from API
             let apiFact;
             try {
-                // If category is "random", fetch normal API; else we can simulate category-based API or fallback to JSON
                 const response = await fetch("https://uselessfacts.jsph.pl/random.json?language=en");
                 const data = await response.json();
                 apiFact = data.text;
@@ -51,8 +50,8 @@ module.exports = {
                 console.error("API fetch failed, using local JSON facts:", err);
             }
 
+            // 2️⃣ Pick fact from API or JSON
             let selectedFact;
-
             if (apiFact) {
                 selectedFact = apiFact;
             } else {
@@ -82,7 +81,7 @@ module.exports = {
                 selectedFact = typeof randomFactObj === "string" ? randomFactObj : randomFactObj.text;
             }
 
-            // Add emoji based on category
+            // 3️⃣ Add emoji based on category
             const categoryEmojiMap = {
                 science: "🔬",
                 technology: "💻",
@@ -93,17 +92,17 @@ module.exports = {
             };
             const emoji = categoryEmojiMap[category.toLowerCase()] || "🌟";
 
-            // Add fact to user history
+            // 4️⃣ Add fact to user history
             usersHistory[userId].push(selectedFact);
 
-            // Optionally include a quiz (simple example)
+            // 5️⃣ Optionally include a mini quiz (20% chance)
             const includeQuiz = Math.random() < 0.2; // 20% chance
             let quizText = "";
             if (includeQuiz) {
                 quizText = `\n🧩 *Mini Quiz:* True or False? Reply with .quiz <answer>`;
             }
 
-            // Send formatted fact
+            // 6️⃣ Send formatted fact
             await sock.sendMessage(from, {
                 text: `📢 *Fun Fact!* ${emoji}\n\n${selectedFact}${quizText}\n\nType .fact next for another fact!`
             });
