@@ -4,9 +4,9 @@ module.exports = {
     description: "Show the current time with friendly greetings and tips",
     async execute(sock, msg, args) {
         try {
-            const now = new Date();
-            const time = now.toLocaleTimeString("en-KE", { hour12: true });
-            const day = now.toLocaleDateString("en-KE", { 
+            const now = new Date(); // ✅ Reads your PC's current time
+            const time = now.toLocaleTimeString([], { hour12: true }); // Uses PC local time
+            const day = now.toLocaleDateString([], { 
                 weekday: "long", month: "long", day: "numeric", year: "numeric" 
             });
 
