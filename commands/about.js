@@ -1,91 +1,34 @@
 // commands/about.js
-const fs = require("fs");
-const path = require("path");
+const os = require("os");
 
 module.exports = {
     name: "about",
-    description: "About JM-MD BOT and features",
+    description: "About JM-MD BOT and what it can do",
     execute: async (sock, msg, args) => {
         try {
             const from = msg.key.remoteJid;
 
-            // Load all commands dynamically (exclude about.js)
-            const commandsPath = path.join(__dirname);
-            const commandFiles = fs.readdirSync(commandsPath)
-                .filter(file => file.endsWith(".js") && file !== "about.js");
-
-            // Map commands with emojis
-            const emojis = {
-                fact: "🍯",
-                joke: "😄",
-                riddle: "🧩",
-                quote: "✨",
-                info: "🤖",
-                owner: "👑",
-                about: "📝",
-                status: "📊",
-                time: "⏰",
-                date: "📅",
-                autoreply: "🤖",
-                autoview: "👀",
-                download: "📥",
-                ping: "🏓",
-                save: "💾",
-                fbdownloader: "📹",
-                calculator: "🧮",
-                reminder: "⏱️",
-                sticker: "🏷️",
-                ytdown: "🎵",
-                weather: "🌤️",
-                menu: "📜",
-                dictionary: "🔤",
-                news: "📰"
-            };
-
-            // Build numbered commands list
-            let counter = 1;
-            const commandsList = commandFiles
-                .map(file => {
-                    const command = require(path.join(commandsPath, file));
-                    const emoji = emojis[command.name] || "⚡";
-                    const line = `${counter}. ${emoji} .${command.name} – ${command.description}`;
-                    counter++;
-                    return line;
-                })
-                .join("\n");
+            // Calculate uptime
+            const uptimeSeconds = process.uptime();
+            const hours = Math.floor(uptimeSeconds / 3600);
+            const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+            const seconds = Math.floor(uptimeSeconds % 60);
+            const uptime = `${hours}h ${minutes}m ${seconds}s`;
 
             const aboutMessage = `
 🤖 *JM-MD BOT v1.0*
 ━━━━━━━━━━━━━━━━━━━━━━━
-👑 *Owner:* JapaneseMonk
 📱 *Prefix:* .
+🕒 *Uptime:* ${uptime}
 
-🌟 *Core Values*
-🕒 24/7 Smart Assistance
-⚡ Automation & Productivity
-⚡ Fast, Reliable & Interactive
-🎯 Professional & User-Friendly
+🌟 *What I Can Do*
 
-🛠️ *Available Commands*
-${commandsList}
-
-🚀 *Features*
-🧠 Fun Facts
-😂 Jokes
-📝 Quotes
-🎲 Riddles
-🤖 AutoReply
-👀 AutoView Status
-📥 Downloads
-🌤️ Weather Updates
-🔤 Dictionary Lookup
-📰 Latest News
-🎵 YouTube Downloader
-
-🔮 *Coming Soon*
-🎮 Quizzes & Games
-💡 Motivational Quotes
-⚙️ Personalized Commands & Media Tools
+1. 🍯 Share facts, jokes, riddles, and quotes  
+2. 🤖 Auto-reply & 👀 status view  
+3. 📥 Download media from 🎵 YouTube & 📹 Facebook  
+4. 🌤️ Provide weather, 📰 news, and 🔤 dictionary results  
+5. 🧮 Perform quick calculations  
+6. ⚡ More tools & updates coming soon!  
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 ✨ *MOTTO:* Smooth, reliable, and fun – just like JM-MD BOT! ✨
