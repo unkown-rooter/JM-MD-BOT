@@ -3,7 +3,7 @@ const config = require("../config");
 
 module.exports = {
     name: "owner",
-    description: "Show owner information and upcoming features",
+    description: "Show owner information",
     execute: async (sock, msg, args) => {
         const from = msg.key.remoteJid;
 
@@ -16,20 +16,11 @@ module.exports = {
 👑 *${botName} - Owner Information*
 
 📛 *Name:* ${ownerName}
-📱 *WhatsApp:* wa.me/${ownerNumber.replace(/[^0-9]/g, "")}
-🤖 *Bot Name:* ${botName}
+📱 *WhatsApp:* 🌐 [Chat Here](https://wa.me/${ownerNumber.replace(/[^0-9]/g, "")})
+🤖 *Bot Name:* ✨ ${botName}
 
-🌟 *Special Notes:*
-- Respect the owner’s time 🙏
-- Contact only for serious inquiries
-- Support the growth of ${botName} 🚀
-
-🚀 *Coming Soon*:
-- Personalized commands
-- Interactive features
-- Fun quizzes, jokes & riddles
-
-_Type *.menu* to see all available commands_
+🙏 *Special Note:* ⏳ Respect the owner’s time
+🚀 *JM-MD BOT Motto:* Shining bright and helping users grow! ✨
 `;
 
         await sock.sendMessage(from, { text: ownerMessage });
