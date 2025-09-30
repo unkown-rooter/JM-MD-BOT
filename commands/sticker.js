@@ -1,66 +1,53 @@
 // commands/sticker.js
-const { writeFileSync, unlinkSync } = require('fs');
-const path = require('path');
-const axios = require('axios');
-const { imageToWebp } = require('node-webpmux');
+const axios = require("axios");
+const { Sticker, StickerTypes } = require("wa-sticker-formatter");
 
 module.exports = {
-    name: 'sticker',
-    description: 'Convert an image or URL into a WhatsApp sticker. Send an image with caption `.sticker` or `.sticker <image_url> [sticker_name]`',
-    execute: async (sock, msg, args) => {
-        const from = msg.key.remoteJid;
+  name: "sticker",
+  description: "Convert an image or URL into a WhatsApp sticker",
+  execute: async (sock, msg, args) => {
+    const from = msg.key.remoteJid;
 
-        try {
-            let imageBuffer;
+    try {
+      let imageBuffer;
 
-            // ✅ Case 1: Image sent directly
-            if (msg.message.imageMessage) {
-                imageBuffer = await sock.downloadMediaMessage(msg, 'buffer');
-            }
-            // ✅ Case 2: URL provided
-            else if (args[0] && args[0].startsWith('http')) {
-                const response = await axios.get(args[0], { responseType: 'arraybuffer' });
-                imageBuffer = Buffer.from(response.data, 'binary');
-            } else {
-                return sock.sendMessage(from, {
-                    text: "❌ Please send an image with caption `.sticker` or use `.sticker <image_url> [sticker_name]`"
-                });
-            }
+      // ✅ Case 1: Image sent directly
+      if (msg.message.imageMessage) {
+        imageBuffer = await sock.downloadMediaMessage(msg, "buffer");
+      }
+      // ✅ Case 2: URL provided
+      else if (args[0] && args[0].startsWith("http")) {
+        const response = await axios.get(args[0], { responseType: "arraybuffer" });
+        imageBuffer = Buffer.from(response.data, "binary");
+      } else {
+        return sock.sendMessage(from, {
+          text: "❌ Please send an image with caption `.sticker` or use `.sticker <url>`",
+        });
+      }
 
-            // ✅ Check file size (limit 5 MB)
-            if (imageBuffer.length > 5 * 1024 * 1024) {
-                return sock.sendMessage(from, { text: "⚠️ Image too large! Maximum size allowed is 5 MB." });
-            }
+      // ✅ Create sticker
+      const sticker = new Sticker(imageBuffer, {
+        pack: "JM-MD BOT Pack",
+        author: "JapaneseMonk",
+        type: StickerTypes.FULL, // FULL = keep ratio with padding, CROP = tight fit
+        quality: 80, // compression level
+      });
 
-            // Save temporary file
-            const tempFile = path.join(__dirname, '../temp_image');
-            writeFileSync(tempFile, imageBuffer);
+      const stickerBuffer = await sticker.build();
 
-            // Convert image to WebP (sticker format)
-            const webpBuffer = await imageToWebp(tempFile);
+      // ✅ Send sticker back
+      await sock.sendMessage(from, { sticker: stickerBuffer });
 
-            // Sticker name from args or default
-            const stickerName = args.slice(1).join(' ') || `sticker_${Date.now()}`;
+      // ✅ Motto message
+      await sock.sendMessage(from, {
+        text: "✨ *MOTTO:* Smooth, reliable, and fun – just like JM-MD BOT! ✨",
+      });
 
-            // ✅ Send sticker back to user
-            await sock.sendMessage(from, { sticker: webpBuffer });
-
-            // ✅ Also send as downloadable WebP file
-            await sock.sendMessage(from, {
-                document: webpBuffer,
-                mimetype: 'image/webp',
-                fileName: `${stickerName}.webp`,
-                caption: `🎉 Here is your sticker download!\n\n✨ *MOTTO:* Smooth, reliable, and fun – just like JM-MD BOT! ✨`
-            });
-
-            // Clean up temporary file
-            unlinkSync(tempFile);
-
-        } catch (error) {
-            console.error('❌ Sticker error:', error);
-            await sock.sendMessage(from, {
-                text: "⚠️ Oops! Something went wrong while creating the sticker. Make sure you sent a valid image or URL (JPEG/PNG)."
-            });
-        }
+    } catch (err) {
+      console.error("❌ Sticker error:", err);
+      await sock.sendMessage(from, {
+        text: "⚠️ Oops! Sticker conversion failed. Please try again with a clear image or valid link.",
+      });
     }
+  },
 };

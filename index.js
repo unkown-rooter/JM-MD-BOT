@@ -1,29 +1,24 @@
-// index.js
 const makeWASocket = require("@whiskeysockets/baileys").default;
 const { useMultiFileAuthState } = require("@whiskeysockets/baileys");
 const fs = require("fs");
 const qrcode = require("qrcode-terminal");
 const path = require("path");
 
-// ✅ AutoReply loaded once
+// ✅ AutoReply
 const autoReply = require("./commands/autoreply");
 
 // ✅ Menu command
 const menuCommand = require("./commands/menu.js");
 
-// ✅ Async config (non-blocking)
+// ✅ Async config
 const configPath = path.join(__dirname, "data", "config.json");
 let config = { autoview: false, autoreply: true };
 
 fs.promises.readFile(configPath, "utf8")
-  .then(data => {
-    config = JSON.parse(data);
-  })
-  .catch(() => {
-    console.log("⚠️ No config found, using default settings.");
-  });
+  .then(data => { config = JSON.parse(data); })
+  .catch(() => { console.log("⚠️ No config found, using default settings."); });
 
-// ✅ Preload all commands once
+// ✅ Load commands
 const commandsDir = path.join(__dirname, "commands");
 const commands = new Map();
 fs.readdirSync(commandsDir)
@@ -37,16 +32,14 @@ fs.readdirSync(commandsDir)
     }
   });
 
-// === Add your number here to whitelist from auto-reply ===
-const ownerNumber = "254743445041"; // your WhatsApp number without '+'
+// === Owner number
+const ownerNumber = "254743445041";
 
 async function startSock() {
   const { state, saveCreds } = await useMultiFileAuthState("auth");
 
-  // ✅ FIX: enable QR printing
   const sock = makeWASocket({
     auth: state,
-    printQRInTerminal: true,   // 👈 added this line
     browser: ["JM-MD BOT", "Chrome", "1.0"],
   });
 
@@ -60,10 +53,11 @@ async function startSock() {
     }
     if (connection === "open") {
       console.log("✅ JM-MD BOT is connected & ready!");
+      console.log("💡 Motto: Strong like Samurai, Smart like Monk ⚔️🙏");
     }
     if (connection === "close") {
       console.log("⚠️ Connection closed, restarting...");
-      startSock(); // auto-restart
+      startSock();
     }
   });
 
@@ -74,28 +68,24 @@ async function startSock() {
 
       const from = msg.key.remoteJid;
       const body = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
+      let commandExecuted = false;
 
-      // 🔥 AUTOVIEW FEATURE
+      // 🔥 AUTOVIEW
       if (from === "status@broadcast") {
         if (config.autoview) {
           await sock.readMessages([msg.key]);
           console.log("✅ Status auto-viewed");
-        } else {
-          console.log("❌ Autoview is OFF, ignoring status");
         }
         return;
       }
 
-      // ✅ Track if a command executed
-      let commandExecuted = false;
-
-      // ✅ Handle menu replies first
+      // ✅ Menu
       if (menuCommand?.handleReply) {
         await menuCommand.handleReply(sock, msg);
         if (body.startsWith(".menu")) commandExecuted = true;
       }
 
-      // ✅ Command handler (messages starting with '.')
+      // ✅ Commands starting with '.'
       if (body.startsWith(".")) {
         const args = body.slice(1).trim().split(/ +/);
         const commandName = args.shift().toLowerCase();
@@ -107,15 +97,11 @@ async function startSock() {
             commandExecuted = true;
           } catch (err) {
             console.error("Command error:", err);
-            await sock.sendMessage(from, {
-              text: "⚠️ Oops! Something went wrong executing that command."
-            });
+            await sock.sendMessage(from, { text: "⚠️ Oops! Something went wrong executing that command." });
             commandExecuted = true;
           }
         } else {
-          await sock.sendMessage(from, {
-            text: `❌ Unknown command: .${commandName}\nType .menu to see all commands.`
-          });
+          await sock.sendMessage(from, { text: `❌ Unknown command: .${commandName}\nType .menu to see all commands.` });
           commandExecuted = true;
         }
       }
@@ -128,7 +114,6 @@ async function startSock() {
           console.error("AutoReply error:", err);
         }
       }
-
     } catch (e) {
       console.error("messages.upsert error:", e);
     }

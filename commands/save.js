@@ -1,48 +1,57 @@
-// save.js - Auto save status when you reply
-const fs = require("fs");
-const path = require("path");
+// save.js - Reply .save to a status → bot sends it to your own WhatsApp chat
 const { downloadMediaMessage } = require("@whiskeysockets/baileys");
 
 module.exports = {
     name: "save",
-    description: "Automatically saves a replied status to internal storage",
+    description: "Reply .save to a status, bot will send it to your own WhatsApp",
     execute: async (sock, msg, args) => {
         try {
             // Only act if this is a reply
             const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-            if (!quoted) return; // no reply = ignore silently
+            if (!quoted) {
+                await sock.sendMessage(msg.key.remoteJid, { text: "❌ Reply to a status with .save" });
+                return;
+            }
 
             // Supported media types
             const mediaTypes = ["imageMessage", "videoMessage", "stickerMessage", "audioMessage"];
             const type = mediaTypes.find(t => quoted[t]);
-            if (!type) return; // not media = ignore silently
+            if (!type) {
+                await sock.sendMessage(msg.key.remoteJid, { text: "⚠️ Only works on media statuses" });
+                return;
+            }
 
             // Download media buffer
             const buffer = await downloadMediaMessage(
-                { message: quoted }, // wrap in object
+                { message: quoted },
                 "buffer",
                 {},
                 { logger: console }
             );
 
-            // File extension
-            const ext = type.includes("image") ? ".jpg" :
-                        type.includes("video") ? ".mp4" :
-                        type.includes("audio") ? ".mp3" : ".webp";
+            // Decide how to send back
+            const yourNumber = "254743445041@s.whatsapp.net"; // ✅ Your WhatsApp JID
+            let message;
 
-            // Save path → directly to internal storage
-            const folder = "/storage/emulated/0/JM-BOT/Status";
-            if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true });
+            if (type.includes("image")) {
+                message = { image: buffer, caption: "📥 Saved status" };
+            } else if (type.includes("video")) {
+                message = { video: buffer, caption: "📥 Saved status" };
+            } else if (type.includes("audio")) {
+                message = { audio: buffer, mimetype: "audio/mp4" };
+            } else {
+                message = { sticker: buffer };
+            }
 
-            const filename = `status_${Date.now()}${ext}`;
-            const filepath = path.join(folder, filename);
+            // Send to your own chat
+            await sock.sendMessage(yourNumber, message);
 
-            fs.writeFileSync(filepath, buffer);
+            // Optional confirmation back to current chat
+            await sock.sendMessage(msg.key.remoteJid, { text: "✅ Sent saved status to your WhatsApp" });
 
-            // No message sent back — stays silent
         } catch (error) {
-            console.error("Error auto-saving status:", error);
-            // No feedback to user, just log it
+            console.error("❌ Error saving status:", error);
+            await sock.sendMessage(msg.key.remoteJid, { text: "⚠️ Failed to save status" });
         }
     }
 };
