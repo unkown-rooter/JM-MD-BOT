@@ -1,17 +1,17 @@
-// commands/fact.js - Fully upgraded JM-MD BOT version
+// commands/fact.js - Fully upgraded JM-MD BOT version with emoji categories
 const fetch = require("node-fetch");
 const facts = require("../data/facts.json"); // local JSON facts with optional category
 const usersHistory = {}; // Tracks fact history per user
 
 let lastFactIndex = -1; // Prevent sending the same fact consecutively globally
 
-// Numbered category map
+// Numbered category map with emojis
 const categories = {
-    1: "science",
-    2: "technology",
-    3: "inspiration",
-    4: "motivational",
-    5: "world"
+    1: { name: "Science & Technology", key: "science_technology", emoji: "🔬💻" },
+    2: { name: "History & Culture", key: "history_culture", emoji: "🏛️📜" },
+    3: { name: "Geography & Travel", key: "geography_travel", emoji: "🌍✈️" },
+    4: { name: "Sports & Entertainment", key: "sports_entertainment", emoji: "⚽🎬" },
+    5: { name: "Miscellaneous", key: "miscellaneous", emoji: "🌟" }
 };
 
 module.exports = {
@@ -28,7 +28,7 @@ module.exports = {
         if (!args[0]) {
             let menuText = "📚 *Choose a category:*\n\n";
             for (let num in categories) {
-                menuText += `${num}. ${categories[num].charAt(0).toUpperCase() + categories[num].slice(1)}\n`;
+                menuText += `${num}. ${categories[num].emoji} ${categories[num].name}\n`;
             }
             menuText += "\nReply with the *number* of the category.";
             await sock.sendMessage(from, { text: menuText });
@@ -37,7 +37,9 @@ module.exports = {
 
         // User sent a number
         const numArg = parseInt(args[0]);
-        const category = categories[numArg] || "random";
+        const categoryObj = categories[numArg];
+        const categoryKey = categoryObj ? categoryObj.key : "random";
+        const categoryEmoji = categoryObj ? categoryObj.emoji : "🌟";
 
         try {
             // 1️⃣ Try fetching from API
@@ -57,10 +59,10 @@ module.exports = {
             } else {
                 // Fallback to JSON facts filtered by category
                 let availableFacts = facts;
-                if (category !== "random") {
-                    availableFacts = facts.filter(f => f.category && f.category.toLowerCase() === category.toLowerCase());
+                if (categoryKey !== "random") {
+                    availableFacts = facts.filter(f => f.category && f.category.toLowerCase() === categoryKey.toLowerCase());
                     if (availableFacts.length === 0) {
-                        await sock.sendMessage(from, { text: `⚠️ No facts available for category "${category}". Showing random fact instead.` });
+                        await sock.sendMessage(from, { text: `⚠️ No facts available for category "${categoryObj.name}". Showing random fact instead.` });
                         availableFacts = facts;
                     }
                 }
@@ -81,30 +83,19 @@ module.exports = {
                 selectedFact = typeof randomFactObj === "string" ? randomFactObj : randomFactObj.text;
             }
 
-            // 3️⃣ Add emoji based on category
-            const categoryEmojiMap = {
-                science: "🔬",
-                technology: "💻",
-                inspiration: "✨",
-                motivational: "💪",
-                world: "🌍",
-                random: "🌟"
-            };
-            const emoji = categoryEmojiMap[category.toLowerCase()] || "🌟";
-
-            // 4️⃣ Add fact to user history
+            // 3️⃣ Add fact to user history
             usersHistory[userId].push(selectedFact);
 
-            // 5️⃣ Optionally include a mini quiz (20% chance)
+            // 4️⃣ Optionally include a mini quiz (20% chance)
             const includeQuiz = Math.random() < 0.2; // 20% chance
             let quizText = "";
             if (includeQuiz) {
                 quizText = `\n🧩 *Mini Quiz:* True or False? Reply with .quiz <answer>`;
             }
 
-            // 6️⃣ Send formatted fact
+            // 5️⃣ Send formatted fact
             await sock.sendMessage(from, {
-                text: `📢 *Fun Fact!* ${emoji}\n\n${selectedFact}${quizText}\n\nType .fact next for another fact!`
+                text: `📢 *Fun Fact!* ${categoryEmoji}\n\n${selectedFact}${quizText}\n\nType .fact next for another fact!`
             });
 
         } catch (err) {

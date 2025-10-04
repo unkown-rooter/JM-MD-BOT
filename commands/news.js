@@ -1,73 +1,67 @@
 // commands/news.js
-const fs = require("fs");
-const path = require("path");
 const axios = require("axios");
 
 module.exports = {
     name: "news",
-    description: "Get latest news (supports categories: general, technology, sports, business, entertainment, health, science)",
+    description: "Get latest news (categories: general, technology, sports, business, entertainment, health, science) or keyword search",
     async execute(sock, msg, args) {
         const from = msg.key.remoteJid;
 
-        // ✅ Determine category
-        const validCategories = ["general", "technology", "sports", "business", "entertainment", "health", "science"];
-        let category = args[0]?.toLowerCase() || "general";
-        if (!validCategories.includes(category)) category = "general";
-
+        const apiKey = "pub_8d98b1cc1cfb461c9565f161896d1be5"; // working NewsData.io API key
+        let query = args.join(" ").trim() || "general"; // treat args as search keyword, default to general
         let articles = [];
 
-        // --- Step 1: Try fetching from NewsAPI.org ---
+        // --- Try fetching from API with search keyword ---
         try {
-            const apiKey = "YOUR_NEWSAPI_KEY"; // replace with your NewsAPI.org key
-            const url = `https://newsapi.org/v2/top-headlines?country=ke&category=${category}&pageSize=5&apiKey=${apiKey}`;
-
+            const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&language=en&q=${encodeURIComponent(query)}&page=1`;
             const response = await axios.get(url);
-            if (response.data?.articles?.length > 0) {
-                articles = response.data.articles.map(article => ({
+
+            if (response.data?.results?.length > 0) {
+                articles = response.data.results.slice(0, 5).map(article => ({
                     title: article.title || "No title",
-                    content: article.description || "No content available",
-                    url: article.url || "N/A",
-                    publishedAt: article.publishedAt ? new Date(article.publishedAt).toLocaleString() : "N/A",
-                    source: article.source?.name || "Unknown"
+                    content: article.description || article.content || "No content available",
+                    url: article.link || "N/A",
+                    publishedAt: article.pubDate ? new Date(article.pubDate).toLocaleString() : "N/A",
+                    source: article.source_id || "Unknown"
                 }));
             }
         } catch (err) {
-            console.warn("❌ News API fetch failed, using local cache:", err.message);
+            console.warn("❌ API fetch failed:", err.message);
         }
 
-        // --- Step 2: Fallback to local JSON if API fails ---
-        if (articles.length === 0) {
+        // --- Fallback to general news if no articles found ---
+        if (articles.length === 0 && query !== "general") {
             try {
-                const newsPath = path.join(__dirname, "../data/news.json");
-                const newsData = JSON.parse(fs.readFileSync(newsPath, "utf-8"));
-                if (newsData && newsData.length > 0) {
-                    articles = newsData.slice(0, 5).map(article => ({
+                const fallbackUrl = `https://newsdata.io/api/1/news?apikey=${apiKey}&country=ke&language=en&q=general&page=1`;
+                const fallbackResponse = await axios.get(fallbackUrl);
+
+                if (fallbackResponse.data?.results?.length > 0) {
+                    articles = fallbackResponse.data.results.slice(0, 5).map(article => ({
                         title: article.title || "No title",
-                        content: article.content || "No content available",
-                        url: article.url || "N/A",
-                        publishedAt: article.publishedAt || "N/A",
-                        source: article.source || "Local Cache"
+                        content: article.description || article.content || "No content available",
+                        url: article.link || "N/A",
+                        publishedAt: article.pubDate ? new Date(article.pubDate).toLocaleString() : "N/A",
+                        source: article.source_id || "Unknown"
                     }));
+                    query = "general"; // indicate fallback
                 }
             } catch (err) {
-                console.error("❌ Local news JSON error:", err.message);
-                return sock.sendMessage(from, { text: "⚠️ Couldn’t fetch news. Try again later!" });
+                console.warn("❌ Fallback API fetch failed:", err.message);
             }
         }
 
-        // --- Step 3: Prepare message ---
         if (articles.length === 0) {
-            return sock.sendMessage(from, { text: "⚠️ No news available right now." });
+            return sock.sendMessage(from, { text: "⚠️ No news available right now. Try again later!" });
         }
 
-        let message = `📰 *Latest News* 📰\nCategory: *${category}*\n━━━━━━━━━━━━━━━\n`;
+        // --- Prepare message ---
+        let message = `📰 *Latest News* 📰\nSearch: *${query}*\n━━━━━━━━━━━━━━━\n`;
         articles.forEach((article, i) => {
             message += `*${i + 1}. ${article.title}*\n📝 ${article.content}\n📅 Published: ${article.publishedAt}\n🏷️ Source: ${article.source}\n🔗 Read more: ${article.url}\n━━━━━━━━━━━━━━━\n`;
         });
 
-        message += `✨ *MOTTO:* Smooth, reliable, and fun – just like JM-MD BOT! ✨`;
+        message += `✨ *MOTTO:* Strong like Samurai, Smart like Monk — JM-MD BOT ⚔️🙏`;
 
-        // --- Step 4: Send message ---
         await sock.sendMessage(from, { text: message });
     }
 };

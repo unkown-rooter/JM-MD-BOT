@@ -3,26 +3,34 @@ const config = require("../config");
 
 module.exports = {
     name: "owner",
-    description: "Show owner information",
+    description: "Show bot owner information",
     execute: async (sock, msg, args) => {
-        const from = msg.key.remoteJid;
+        try {
+            const from = msg.key.remoteJid;
 
-        // ✅ Use values from config.js or fallback defaults
-        const ownerName = config.OWNER_NAME || "JapaneseMonk";
-        const ownerNumber = config.OWNER_NUMBER || "+254743445041";
-        const botName = config.BOT_NAME || "JM-MD BOT";
+            // ✅ Owner details (with safe fallback)
+            const ownerName = config.OWNER_NAME || "JapaneseMonk";
+            const ownerNumber = (config.OWNER_NUMBER || "254743445041").replace(/[^0-9]/g, "");
+            const botName = config.BOT_NAME || "JM-MD BOT";
 
-        const ownerMessage = `
-👑 *${botName} - Owner Information*
+            // ✅ Message template
+            const ownerMessage = `
+┏━━━━━━━━━━━━━━━━━━━┓
+      🤖 *${botName} - Owner Info* 👑
+┗━━━━━━━━━━━━━━━━━━━┛
 
 📛 *Name:* ${ownerName}
-📱 *WhatsApp:* 🌐 [Chat Here](https://wa.me/${ownerNumber.replace(/[^0-9]/g, "")})
-🤖 *Bot Name:* ✨ ${botName}
+📱 *WhatsApp:* [Chat Here](https://wa.me/${ownerNumber})
+🤖 *Bot:* ${botName}
 
-🙏 *Special Note:* ⏳ Respect the owner’s time
-🚀 *JM-MD BOT Motto:* Shining bright and helping users grow! ✨
+🚀 *Motto:* Shining bright and helping users grow! ✨
+🙏 *Note:* Respect the owner’s time, no spam!
 `;
 
-        await sock.sendMessage(from, { text: ownerMessage });
+            await sock.sendMessage(from, { text: ownerMessage });
+        } catch (err) {
+            console.error("❌ Error in owner.js:", err);
+            await sock.sendMessage(msg.key.remoteJid, { text: "⚠️ Failed to fetch owner info." });
+        }
     }
 };

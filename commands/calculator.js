@@ -6,14 +6,27 @@ const lastResult = {};
 
 module.exports = {
     name: 'calculator',
-    description: 'Quick math calculations with advanced functions',
-    execute: async (sock, msg, args) => {
+    description: 'Quick math calculations with method & advanced functions',
+    async execute(sock, msg, args) {
         const from = msg.key.remoteJid;
 
         if (!args.length) {
-            return sock.sendMessage(from, { 
-                text: "📊 *Calculator Usage*\nExample: `.calculator 5*12`\nSupports: +, -, *, /, %, sqrt(), sin(), cos(), tan(), log(), exp(), factorial(), pi, e, ans" 
-            });
+            const menu = `
+🧮 *Calculator Usage*  
+━━━━━━━━━━━━━━━━━━  
+Example: \`.calculator (5+3)*2\`  
+
+📚 *Math Menu:*  
+➕➖ *Basic:*  + , - , * , / , %  
+📐 *Functions:*  sqrt(x), factorial(x), exp(x), log(x)  
+🎯 *Trig:*  sin(x), cos(x), tan(x)  (radians)  
+⚛️ *Constants:*  pi , e  
+♻️ *Memory:*  ans (previous result)  
+
+━━━━━━━━━━━━━━━━━━  
+⚔️ JM-MD BOT — Strong like Samurai, Smart like Monk 🙏  
+            `;
+            return sock.sendMessage(from, { text: menu });
         }
 
         let expression = args.join(' ');
@@ -24,31 +37,29 @@ module.exports = {
         }
 
         try {
-            // Evaluate safely
-            const result = math.evaluate(expression);
+            // Parse the expression into a math tree
+            const node = math.parse(expression);
+            const formula = node.toString();   // shows the "method/formula"
+            const result = node.evaluate();    // evaluates safely
+
+            // Save result for this user
             lastResult[from] = result;
 
             const reply = `
-🧮 *Calculator Result*
-━━━━━━━━━━━━━━━━━━
-Expression: \`${expression}\`
-Result: *${result}*
+🧮 *Calculator Result*  
+━━━━━━━━━━━━━━━━━━  
+📌 Expression: \`${expression}\`  
+📐 Formula: \`${formula}\`  
+✅ Result: *${result}*  
 
-📚 *Math Menu:*
-+ , - , * , / , %  
-sqrt(x), factorial(x), exp(x), log(x)  
-sin(x), cos(x), tan(x) (radians)  
-Constants: pi, e  
-Previous result: ans
-
-━━━━━━━━━━━━━━━━━━
-✨ *MOTTO:* Smooth, reliable, and fun – just like JM-MD BOT! ✨
+━━━━━━━━━━━━━━━━━━  
+⚔️ JM-MD BOT — Strong like Samurai, Smart like Monk 🙏
             `;
 
             await sock.sendMessage(from, { text: reply });
         } catch (error) {
             await sock.sendMessage(from, { 
-                text: "❌ Invalid expression. Please check your syntax and try again.\nExample: `.calculator 5*12`" 
+                text: "❌ Invalid expression. Please check your syntax and try again.\nExample: `.calculator (5+3)*2`" 
             });
         }
     }
