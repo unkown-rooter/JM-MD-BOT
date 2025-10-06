@@ -1,61 +1,57 @@
-# ![JM-MD BOT Logo](assets/imglogo.png)
-# JM-MD BOT 🤖
+# ⚔️ JM-MD-BOT — WhatsApp Multi-Function Bot
 
-**JM-MD BOT** is a **WhatsApp Multi-Device Bot** built using [Baileys](https://github.com/WhiskeySockets/Baileys).  
-It allows you to automate WhatsApp tasks, run commands, and manage chats in a modular way.
-
----
-
-## 🚀 Our Motto
-*Smooth, reliable, and fun – just like JM-MD BOT!* ✨
+> **Motto:** Strong like Samurai, Smart like Monk 🙏  
+> **Created by:** JapaneseMonk  
+> **Power:** Fast • Simple • Powerful
 
 ---
 
-## ✨ Current Features
+## 🌐 Overview
 
-- 📲 Connects to WhatsApp via QR Code (Multi-Device support).
-- ⚡ Handles messages in real time.
-- 🧩 Modular command system (`commands/` folder).
-- 🤖 Commands:
-  - `.menu` → Shows available commands
-  - `.about` → Info about the bot
-  - `.owner` → Owner details
-- 🔁 Auto-Reply System
-  - `autoreply.js` handles all normal chats automatically.
-  - Status stored in `autoreply-status.json`.
-  - Custom responses stored in `autoreplies.json`.
-- 👀 AutoView toggle (`autoview.js`)
-- 🧮 Calculator command (`calculator.js`)
-- 💾 Save statuses and media (`save.js`, `download.js`, `ytdown.js`)
-- 🔹 Facebook & YouTube downloader (`fbdownloader.js`, `ytdown.js`)
-- 🏓 Ping command (`ping.js`) to check bot status
-- ⏱️ Reminder system (`reminder.js`)
-- 🔒 Secure session in `auth/` folder.
-- 🌐 Ready for deployment (Heroku, Railway, Render, Replit).
-- 🔑 API key support via `.env`.
+**JM-MD-BOT** is a smart, modular WhatsApp bot built with **Node.js**.  
+It performs multiple functions — downloading videos, fetching music, searching for APKs, and more — directly inside WhatsApp chats.
+
+This bot connects to WhatsApp via the **Baileys** library and supports **Termux**, **Windows**, and **Linux** environments.
 
 ---
 
-## 🚀 Upcoming Features
+## 📦 Features
 
-- 🎨 Sticker Maker (convert images/videos to stickers).
-- 🎵 Media Downloader (YouTube, TikTok, Instagram, Facebook).
-- 🛡️ Group Admin Tools (welcome/goodbye, anti-link, mute/unmute).
-- ⚙️ Custom Commands (easily add new ones).
-- 📊 Analytics & Usage Tracking.
-- 🔔 Auto-reply scheduling system.
+✅ YouTube Song Downloader (`.play`)  
+✅ Facebook Video Downloader (`.fbdownloader`)  
+✅ APK Downloader (`.apk`)  
+✅ News, Facts, and Daily Quotes Commands  
+✅ Multi-Device Ready  
+✅ MongoDB + Render Integration (Optional)  
+✅ Auto-Restart with PM2  
 
 ---
 
-## ⚙️ Setup
+## ⚙️ Installation Guide
+
+Below are **three installation paths** — choose the one for your device.
+
+---
+
+### 🟢 1. TERMUX SETUP (Android)
+
+**📲 Step-by-Step Commands:**
 
 ```bash
-# Clone repo
+# Update Termux packages
+pkg update && pkg upgrade -y
+
+# Install required dependencies
+pkg install nodejs git ffmpeg imagemagick -y
+
+# Clone JM-MD-BOT repository
 git clone https://github.com/unkown-rooter/JM-MD-BOT.git
+
+# Enter the project directory
 cd JM-MD-BOT
 
-# Install dependencies
+# Install all node dependencies
 npm install
 
-# Start bot
-node index.js
+# Start the bot
+node server.js
